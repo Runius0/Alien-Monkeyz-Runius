@@ -1,0 +1,68 @@
+@font-face {
+    font-family: umb_font;
+    src: url("assets/Lurple\'s\ Delight\ X2.ttf");
+}
+body{
+    background-color: #211912;
+    overflow: hidden;
+    font-family: umb_font;
+}
+*{
+    -webkit-user-drag: none;
+    user-select: none;
+}
+img, #inventory .amount{
+    width: calc(16px * var(--sprite-scale));
+}
+#cursor{
+    pointer-events: none;
+    z-index: 10;
+}
+#world{ 
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+#world .ground{
+    position: absolute;
+}
+#info-txt:is(.active){
+    position: absolute;
+    color: white;
+    right: -251px;
+    top: -26px;
+    font-size: 2rem;
+    background-color: #000000;
+    width: 250px;
+    white-space: pre-line;
+}
+#inventory{
+    display: flex;
+    justify-content: center;
+    width:max-content;
+    position: absolute;
+    left: 50%;
+    bottom: calc(-16px * var(--sprite-scale) * 1.4);
+    transform: translateX(-50%);
+    gap: 10px;
+}
+#inventory .slot{
+    width: calc(16px * var(--sprite-scale));
+    height: calc(16px * var(--sprite-scale));
+    background-color: #d9d9d9; 
+}
+#inventory .slot:is(.active){
+   border: 5px solid #a600ff; 
+}
+#inventory .amount{
+    display: flex;
+    justify-content: end;
+    align-items: end;
+    height: calc(16px * var(--sprite-scale));
+    color: #211212;
+    bottom: calc(22px * var(--sprite-scale));
+    left: 0;
+    position: relative;
+    font-size: 1.66rem;
+}
