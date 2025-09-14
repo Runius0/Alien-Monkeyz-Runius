@@ -16,7 +16,7 @@ function createWorld(amnt, sprite_size, world_length){
         world.appendChild(tile);
     }
 }
-function createElm(amnt, type, clas, parent, source, id_, txt){
+function createElm(amnt, type, clas, parent, source, id_, txt, itmAmnt){
     let elm; 
     for (let i = 0; i < amnt; i++) {
         elm = document.createElement(type);
@@ -28,6 +28,9 @@ function createElm(amnt, type, clas, parent, source, id_, txt){
             elm.id = id_;
         if(txt)
             elm.textContent = txt;
+        if(itmAmnt)
+            elm.dataset.amnt = itmAmnt;
+        
         parent.appendChild(elm);
     }
     return elm;
@@ -81,7 +84,7 @@ function addPath(row_size, height_size, strucGenFunc){
         if(currTile >= (row_size * height_size) - row_size + 1){
             clearInterval(curveInterval);
 
-            startWave(10);
+            /* startWave(10); */
 
             strucGenFunc(100, "assets/tree.svg", 27);
             strucGenFunc(25, "assets/small-rock.svg", 29);
@@ -121,12 +124,20 @@ function cursorHandler(){
     let cursorY;
 
     window.addEventListener("mousedown", function(e){
-        destoryStructures("axe", "hl-tree", e.target, 10, 27, "log");
-        destoryStructures("pickaxe", "hl-small-rock", e.target, 10, 29, "stone");
-        destoryStructures("pickaxe", "hl-big-rock", e.target, 10, 29, "stone");
+        destoryStructures("axe", "hl-tree", e.target, 10, 27, "log", 96);
+        destoryStructures("pickaxe", "hl-small-rock", e.target, 10, 29, "stone", 96);
+        destoryStructures("pickaxe", "hl-big-rock", e.target, 10, 29, "stone", 96);
+
+        destoryStructures("stone-axe", "hl-tree", e.target, 10, 27, "log", 60);
+
+        destoryStructures("stone-pickaxe", "hl-small-rock", e.target, 10, 29, "stone", 60);
+        destoryStructures("stone-pickaxe", "hl-big-rock", e.target, 10, 29, "stone", 60);
 
         placeDownItems("log", e.target);
         placeDownItems("stone", e.target);
+
+        placeDownItems("workbench", e.target);
+        recipeMenu(e.target, cursorX, cursorY);
         
         pickUpItems("hl-log", e.target);
         pickUpItems("hl-stone", e.target);
@@ -140,14 +151,23 @@ function cursorHandler(){
         outlineAdder("small-rock", e.target, 10);
         outlineAdder("big-rock", e.target, 10);
 
+        outlineAdder("workbench", e.target, 1);
+
+        outlineAdder("axe", e.target, [["log", 10]]);
+        outlineAdder("pickaxe", e.target, [["log", 10]]);
+        outlineAdder("stone-axe", e.target, [["log", 10], ["stone", 5]]);
+        outlineAdder("stone-pickaxe", e.target, [["log", 10], ["stone", 5]]);
+
         outlineAdder("log", e.target, rndmNumb(1, 5));
         outlineAdder("stone", e.target, rndmNumb(1, 5));
 
-        outlineAdder("enemy", e.target, parseInt(e.target.dataset.amount))
+        /* outlineAdder("enemy", e.target, parseInt(e.target.dataset.amount)) */
     });
 }
 function outlineAdder(struc, e, maxHp){
     if(e.parentNode.parentNode == inventory) return; 
+    
+    let infoTxtVal = ""
 
     const baseSrc = `assets/${struc}.svg`;
     const hlSrc = `assets/hl-${struc}.svg`;
@@ -165,7 +185,7 @@ function outlineAdder(struc, e, maxHp){
             });
             e._hasLeaveHandler = true;
         }
-        if(!e.dataset.redrop){
+        if(!e.dataset.redrop || !e.classList.contains("recipe")){
             if(e.dataset.drop != 0){
                 if(e.dataset.destroyed === undefined) infoTxt.textContent = `Hp ${maxHp}`;
                 else infoTxt.textContent = `Hp ${Math.abs(e.dataset.destroyed - maxHp)}`;
@@ -174,27 +194,34 @@ function outlineAdder(struc, e, maxHp){
                 infoTxt.textContent = `Amnt ${maxHp}`;
             }
             if(e.dataset.drop > 0) infoTxt.textContent = `Amnt ${e.dataset.drop}`;
-        }else{
+        }
+        if(e.dataset.redrop){
             infoTxt.textContent = `Amnt ${e.dataset.redrop}`;
         }
+        if(e.classList.contains("recipe")){
+            for (let i = 0; i < maxHp.length; i++) 
+                infoTxtVal += `${maxHp[i].toString().replace(",", " ")} \n`;
+
+            infoTxt.textContent = infoTxtVal;
+        }
         //
-        if(e.dataset.amount != 0){
+   /*      if(e.dataset.amount != 0){
             if(e.dataset.amount === undefined) infoTxt.textContent = `Hp ${maxHp}`;
             else infoTxt.textContent = `Hp ${Math.abs(e.dataset.drop - maxHp)}`;
         } else {
             e.dataset.amount = maxHp;
             infoTxt.textContent = `Amnt ${maxHp}`;
         }
-        if(e.dataset.amount > 0) infoTxt.textContent = `Amnt ${e.dataset.amount}`;
+        if(e.dataset.amount > 0) infoTxt.textContent = `Amnt ${e.dataset.amount}`; */
         //
         infoTxt.classList.add("active");
     }
 }
-function destoryStructures(tool, struc, e, maxHp, spriteSize, drop) {
+function destoryStructures(tool, struc, e, maxHp, spriteSize, drop, _speed) {
     let destroyAnim;
     let iteration = 0;
     let last = performance.now();
-    let speed = 96;
+    let speed = _speed;
 
     if (
         inventory.children[activeSlot].children.length != 0 && inventory.children[activeSlot].children[0].getAttribute("src") == `assets/${tool}.svg` &&
@@ -267,6 +294,9 @@ function pickUpItems(itm, e){
                 createElm(1, "p", "amount", inventory.children[slot.index], null, null, e.dataset.drop);
             else
                 createElm(1, "p", "amount", inventory.children[slot.index], null, null, 1);
+            //
+            if(slot.index == activeSlot)
+                cursor.src = `assets/${itm.slice(3)}.svg`;
         }
         else {
             if(!e.dataset.redrop)
@@ -294,20 +324,19 @@ function placeDownItems(itm, e){
         e.dataset.redrop = 1;
     }
 }
-function crafting(e){
-    
-}
-function findFreeSlot(inventory, targetSrc) {
+function findFreeSlot(inventory, targetSrc, unstackable) {
     const slots = Array.from(inventory.children);
 
-    for (let i = 0; i < slots.length; i++) {
-        if (slots[i].children.length > 0) {
-        const child = slots[i].children[0];
-            if (child.getAttribute("src") === targetSrc) {
-                return {
-                    found: true,
-                    index: i
-                };
+    if(!unstackable){
+        for (let i = 0; i < slots.length; i++) {
+            if (slots[i].children.length > 0) {
+            const child = slots[i].children[0];
+                if (child.getAttribute("src") === targetSrc) {
+                    return {
+                        found: true,
+                        index: i
+                    };
+                }
             }
         }
     }
@@ -326,13 +355,11 @@ function findFreeSlot(inventory, targetSrc) {
         index: -1
     };
 }
+function addItemToInventory(slot, src, amnt){
+    createElm(1, "img", "item", inventory.children[slot], `assets/${src}.svg`);
+    createElm(1, "p", "amount", inventory.children[slot], null, null, amnt);
+}
 function inventoryHandler(inv){
-    // CREATING ITEMS ON STARTUP
-    createElm(1, "img", "item", inv.children[0], "assets/axe.svg");
-    createElm(1, "p", "amount", inv.children[0], null, null, "10");
-    //
-    createElm(1, "img", "item", inv.children[1], "assets/pickaxe.svg");
-    createElm(1, "p", "amount", inv.children[1], null, null, "10");
     // SET FIRST SLOT ACTIVE BY DEFAULT
     inv.children[0].classList.add("active");
     // CHANGE CURSOR TO HELD ITEM INITIALLY 
@@ -343,7 +370,7 @@ function inventoryHandler(inv){
         return e.key;
     });
     Array.from(inv.children).forEach(function(slot, i) {
-        slot.addEventListener("click", function(){
+        slot.addEventListener("mousedown", function(){
            activeSlotSelecter(i + 1, inv);
            return i + 1;
         })
@@ -364,6 +391,72 @@ function activeSlotSelecter(active_slot, inv){
             cursor.src = inv.children[active_slot - 1].children[0].getAttribute("src");
         }else
             cursor.src = "assets/empty.svg";
+    }
+}
+function recipeMenu(e, mouseX, mouseY){
+    if(e.getAttribute("src") == 'assets/hl-workbench.svg'){
+        recpeMnu.style.left = `${mouseX}px`;
+        recpeMnu.style.top = `${mouseY}px`;
+        recpeMnu.classList.add("active");
+    }
+    if (e.classList.contains("recipe")) {
+        const infoTxtLines = infoTxt.innerText
+            .split(/\r?\n/)
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+
+        const requirements = infoTxtLines.map(line => {
+            const mat = line.match(/[^\d]+/g)?.join('').trim();
+            const amntArray = line.match(/\d+/g)?.map(Number) || [];
+            const amnt = amntArray[0];
+            return [mat, amnt];
+        });
+
+        const materialSlots = requirements.map(req => {
+            return findFreeSlot(inventory, `assets/${req[0]}.svg`);
+        });
+
+        if (materialSlots.some(slot => !slot.found)) return;
+
+        const allEnough = requirements.every((req, i) => {
+            const slot = materialSlots[i];
+            const currentAmount = parseInt(inventory.children[slot.index].children[1].innerText);
+            return currentAmount >= req[1];
+        });
+
+        if (!allEnough) return;
+
+        // Deduct all materials
+        requirements.forEach((req, i) => {
+            const slot = materialSlots[i];
+            const currentAmount = parseInt(inventory.children[slot.index].children[1].innerText);
+            const newAmount = currentAmount - req[1];
+
+            if (newAmount > 0) {
+                inventory.children[slot.index].children[1].innerText = newAmount;
+            } else {
+                // remove both elements from slot
+                inventory.children[slot.index].children[0].remove();
+                inventory.children[slot.index].children[0].remove();
+            }
+        });
+
+        // Now craft the item
+        const fullSrc = e.getAttribute("src");
+        const srcStart = fullSrc.indexOf("hl-") + 3;
+        const srcEnd = fullSrc.indexOf(".");
+        const shortSrc = fullSrc.substring(srcStart, srcEnd);
+
+        let craftedItmSlot = findFreeSlot(inventory, null, 1);
+        addItemToInventory(craftedItmSlot.index, shortSrc, e.dataset.amnt);
+
+        if (activeSlot == craftedItmSlot.index) {
+            cursor.src = `assets/${shortSrc}.svg`;
+        }
+    }
+
+    if(e == recpeMnuExitBtn){
+        recpeMnu.classList.remove("active");
     }
 }
 function enemySpawner(enemyIndex){
