@@ -84,11 +84,9 @@ function addPath(row_size, height_size, strucGenFunc){
         if(currTile >= (row_size * height_size) - row_size + 1){
             clearInterval(curveInterval);
 
-            /* startWave(10); */
-
             strucGenFunc(100, "assets/tree.svg", 27);
-            strucGenFunc(25, "assets/small-rock.svg", 29);
             strucGenFunc(10, "assets/big-rock.svg", 29);
+            strucGenFunc(10, "assets/iron-ore.svg", 21);
         } 
         // ADD THE REST PATH TILE VALUES
         path.push([currTile, world.children[currTile].src])
@@ -124,23 +122,42 @@ function cursorHandler(){
     let cursorY;
 
     window.addEventListener("mousedown", function(e){
-        destoryStructures("axe", "hl-tree", e.target, 10, 27, "log", 96);
-        destoryStructures("pickaxe", "hl-small-rock", e.target, 10, 29, "stone", 96);
-        destoryStructures("pickaxe", "hl-big-rock", e.target, 10, 29, "stone", 96);
+        destoryStructures("axe", "hl-tree", e.target, 10, 27, ["log", "log", "log", "sapling"], 96);
+        destoryStructures("stone-axe", "hl-tree", e.target, 10, 27, ["log", "log", "log", "sapling"], 60);
+        destoryStructures("iron-axe", "hl-tree", e.target, 10, 27, ["log", "log", "log", "sapling"], 35);
 
-        destoryStructures("stone-axe", "hl-tree", e.target, 10, 27, "log", 60);
-
-        destoryStructures("stone-pickaxe", "hl-small-rock", e.target, 10, 29, "stone", 60);
-        destoryStructures("stone-pickaxe", "hl-big-rock", e.target, 10, 29, "stone", 60);
+        destoryStructures("pickaxe", "hl-big-rock", e.target, 10, 29, ["stone"], 96);
+        destoryStructures("stone-pickaxe", "hl-big-rock", e.target, 10, 29, ["stone"], 60);
+        destoryStructures("iron-pickaxe", "hl-big-rock", e.target, 10, 29, ["stone"], 35);
+        
+        destoryStructures("stone-pickaxe", "hl-iron-ore", e.target, 15, 21, ["raw-iron"], 60);
+        destoryStructures("iron-pickaxe", "hl-iron-ore", e.target, 15, 21, ["raw-iron"], 30);
+        
+        destoryStructures("pickaxe", "hl-furnace", e.target, 2, 0, [], 96);
+        destoryStructures("stone-pickaxe", "hl-furnace", e.target, 2, 0, [], 60);
+        destoryStructures("iron-pickaxe", "hl-furnace", e.target, 2, 0, [], 30);
+        
+        destoryStructures("axe", "hl-workbench", e.target, 2, 0, [], 96);
+        destoryStructures("stone-axe", "hl-workbench", e.target, 2, 0, [], 60);
+        destoryStructures("pickaxe-axe", "hl-workbench", e.target, 2, 0, [], 30);
 
         placeDownItems("log", e.target);
         placeDownItems("stone", e.target);
+        placeDownItems("sapling", e.target);
+        placeDownItems("raw-iron", e.target);
+        placeDownItems("iron", e.target);
 
         placeDownItems("workbench", e.target);
+        placeDownItems("furnace", e.target);
         recipeMenu(e.target, cursorX, cursorY);
         
         pickUpItems("hl-log", e.target);
         pickUpItems("hl-stone", e.target);
+        pickUpItems("hl-sapling", e.target);
+        pickUpItems("hl-raw-iron", e.target);
+        pickUpItems("hl-iron", e.target);
+
+        smelt(e.target);
     });    
  
     window.addEventListener("mousemove", function(e){
@@ -148,31 +165,37 @@ function cursorHandler(){
         cursor.style.transform = `translate(${cursorX}px, ${cursorY}px)`;
 
         outlineAdder("tree", e.target, 10);
-        outlineAdder("small-rock", e.target, 10);
         outlineAdder("big-rock", e.target, 10);
+        outlineAdder("iron-ore", e.target, 15);
 
         outlineAdder("workbench", e.target, 1);
+
+        outlineAdder("sapling", e.target, 1);
 
         outlineAdder("axe", e.target, [["log", 10]]);
         outlineAdder("pickaxe", e.target, [["log", 10]]);
         outlineAdder("stone-axe", e.target, [["log", 10], ["stone", 5]]);
         outlineAdder("stone-pickaxe", e.target, [["log", 10], ["stone", 5]]);
+        outlineAdder("iron-pickaxe", e.target, [["log", 10], ["iron", 5]]);
+        outlineAdder("iron-axe", e.target, [["log", 10], ["iron", 5]]);
+        outlineAdder("gear", e.target, [["iron", 5]]);
+        outlineAdder("furnace", e.target, [["stone", 10], ["log", 5]]);
 
         outlineAdder("log", e.target, rndmNumb(1, 5));
         outlineAdder("stone", e.target, rndmNumb(1, 5));
-
-        /* outlineAdder("enemy", e.target, parseInt(e.target.dataset.amount)) */
+        outlineAdder("raw-iron", e.target, rndmNumb(1, 5));
+        outlineAdder("iron", e.target);
     });
 }
 function outlineAdder(struc, e, maxHp){
     if(e.parentNode.parentNode == inventory) return; 
     
-    let infoTxtVal = ""
-
     const baseSrc = `assets/${struc}.svg`;
     const hlSrc = `assets/hl-${struc}.svg`;
     const src = e.getAttribute("src");
 
+    infoTxtVal = "";
+    
     if(src && (src === baseSrc || src.includes(`assets/${struc}`))){
         e.src = hlSrc;
 
@@ -205,19 +228,12 @@ function outlineAdder(struc, e, maxHp){
             infoTxt.textContent = infoTxtVal;
         }
         //
-   /*      if(e.dataset.amount != 0){
-            if(e.dataset.amount === undefined) infoTxt.textContent = `Hp ${maxHp}`;
-            else infoTxt.textContent = `Hp ${Math.abs(e.dataset.drop - maxHp)}`;
-        } else {
-            e.dataset.amount = maxHp;
-            infoTxt.textContent = `Amnt ${maxHp}`;
-        }
-        if(e.dataset.amount > 0) infoTxt.textContent = `Amnt ${e.dataset.amount}`; */
-        //
         infoTxt.classList.add("active");
     }
 }
 function destoryStructures(tool, struc, e, maxHp, spriteSize, drop, _speed) {
+    if(e.parentNode.parentNode == recpeMnu) return; 
+
     let destroyAnim;
     let iteration = 0;
     let last = performance.now();
@@ -226,6 +242,9 @@ function destoryStructures(tool, struc, e, maxHp, spriteSize, drop, _speed) {
     if (
         inventory.children[activeSlot].children.length != 0 && inventory.children[activeSlot].children[0].getAttribute("src") == `assets/${tool}.svg` &&
         e.getAttribute("src") == `assets/${struc}.svg`) {
+
+        drop = (drop.length > 1) ? drop[rndmNumb(0, drop.length - 1)] : drop[0];
+
         function step(now) {
             if (!destroyAnim) return;
 
@@ -252,7 +271,15 @@ function destoryStructures(tool, struc, e, maxHp, spriteSize, drop, _speed) {
                             e.dataset.drop = 0
                             e.src = `assets/${drop}.svg`;
                         }  
-                        else e.src = `assets/ground.svg`;
+                        else {
+                            collectItem(e, 1);
+
+                            // HIDE RECIPE MENU WHEN THE DESTROYED STRUC IS THE WORKBENCH
+                            if(struc == "hl-workbench") recpeMnu.classList.remove("active");
+                            
+                            e.dataset.destroyed = 0;
+                            e.src = `assets/ground.svg`;
+                        }
 
                         e.style.transform = "translateY(0)";
                         infoTxt.classList.remove("active");
@@ -327,7 +354,7 @@ function placeDownItems(itm, e){
 function findFreeSlot(inventory, targetSrc, unstackable) {
     const slots = Array.from(inventory.children);
 
-    if(!unstackable){
+    if(unstackable != 0){
         for (let i = 0; i < slots.length; i++) {
             if (slots[i].children.length > 0) {
             const child = slots[i].children[0];
@@ -358,6 +385,29 @@ function findFreeSlot(inventory, targetSrc, unstackable) {
 function addItemToInventory(slot, src, amnt){
     createElm(1, "img", "item", inventory.children[slot], `assets/${src}.svg`);
     createElm(1, "p", "amount", inventory.children[slot], null, null, amnt);
+}
+function collectItem(e, amnt, oneSrc){
+    const fullSrc = (!oneSrc) ? e.getAttribute("src") : oneSrc;
+    const srcStart = fullSrc.indexOf("hl-") + 3;
+    const srcEnd = fullSrc.indexOf(".");
+    const shortSrc = fullSrc.substring(srcStart, srcEnd);
+
+    let stackableStatus = (unstackables.includes(shortSrc)) ? 1 : 0;
+
+    if(stackableStatus){
+        let craftedItmSlot = findFreeSlot(inventory, null, stackableStatus);
+        createElm(1, "img", "item", inventory.children[craftedItmSlot.index], `assets/${shortSrc}.svg`);
+        createElm(1, "p", "amount", inventory.children[craftedItmSlot.index], null, null, amnt);
+        if (activeSlot == craftedItmSlot.index) cursor.src = `assets/${shortSrc}.svg`;
+    }else{
+        let craftedItmSlot = findFreeSlot(inventory, fullSrc.replace("hl-", ""));
+        if(inventory.children[craftedItmSlot.index].children.length < 1) {
+            createElm(1, "img", "item", inventory.children[craftedItmSlot.index], `assets/${shortSrc}.svg`);
+            createElm(1, "p", "amount", inventory.children[craftedItmSlot.index], null, null, amnt);
+            if (activeSlot == craftedItmSlot.index) cursor.src = `assets/${shortSrc}.svg`;
+        }
+        else inventory.children[craftedItmSlot.index].children[1].innerText = parseInt(inventory.children[craftedItmSlot.index].children[1].innerText) + 1;
+    }
 }
 function inventoryHandler(inv){
     // SET FIRST SLOT ACTIVE BY DEFAULT
@@ -393,113 +443,110 @@ function activeSlotSelecter(active_slot, inv){
             cursor.src = "assets/empty.svg";
     }
 }
-function recipeMenu(e, mouseX, mouseY){
-    if(e.getAttribute("src") == 'assets/hl-workbench.svg'){
-        recpeMnu.style.left = `${mouseX}px`;
-        recpeMnu.style.top = `${mouseY}px`;
-        recpeMnu.classList.add("active");
-    }
-    if (e.classList.contains("recipe")) {
-        const infoTxtLines = infoTxt.innerText
-            .split(/\r?\n/)
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-
-        const requirements = infoTxtLines.map(line => {
-            const mat = line.match(/[^\d]+/g)?.join('').trim();
-            const amntArray = line.match(/\d+/g)?.map(Number) || [];
-            const amnt = amntArray[0];
-            return [mat, amnt];
-        });
-
-        const materialSlots = requirements.map(req => {
-            return findFreeSlot(inventory, `assets/${req[0]}.svg`);
-        });
-
-        if (materialSlots.some(slot => !slot.found)) return;
-
-        const allEnough = requirements.every((req, i) => {
-            const slot = materialSlots[i];
-            const currentAmount = parseInt(inventory.children[slot.index].children[1].innerText);
-            return currentAmount >= req[1];
-        });
-
-        if (!allEnough) return;
-
-        // Deduct all materials
-        requirements.forEach((req, i) => {
-            const slot = materialSlots[i];
-            const currentAmount = parseInt(inventory.children[slot.index].children[1].innerText);
-            const newAmount = currentAmount - req[1];
-
-            if (newAmount > 0) {
-                inventory.children[slot.index].children[1].innerText = newAmount;
-            } else {
-                // remove both elements from slot
-                inventory.children[slot.index].children[0].remove();
-                inventory.children[slot.index].children[0].remove();
-            }
-        });
-
-        // Now craft the item
-        const fullSrc = e.getAttribute("src");
-        const srcStart = fullSrc.indexOf("hl-") + 3;
-        const srcEnd = fullSrc.indexOf(".");
-        const shortSrc = fullSrc.substring(srcStart, srcEnd);
-
-        let craftedItmSlot = findFreeSlot(inventory, null, 1);
-        addItemToInventory(craftedItmSlot.index, shortSrc, e.dataset.amnt);
-
-        if (activeSlot == craftedItmSlot.index) {
-            cursor.src = `assets/${shortSrc}.svg`;
+function recipeMenu(e, mouseX, mouseY){ 
+    if(!cursor.getAttribute("src").includes("axe") || cursor.getAttribute("src").includes("pickaxe")){
+        if(e.getAttribute("src") == 'assets/hl-workbench.svg'){
+            recpeMnu.style.left = `${mouseX}px`;
+            recpeMnu.style.top = `${mouseY}px`;
+            recpeMnu.classList.add("active");
         }
+        if (e.classList.contains("recipe")) {
+            const infoTxtLines = infoTxt.innerText
+                .split(/\r?\n/)
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+    
+            const requirements = infoTxtLines.map(line => {
+                const mat = line.match(/[^\d]+/g)?.join('').trim();
+                const amntArray = line.match(/\d+/g)?.map(Number) || [];
+                const amnt = amntArray[0];
+                return [mat, amnt];
+            });
+    
+            const materialSlots = requirements.map(req => {
+                return findFreeSlot(inventory, `assets/${req[0]}.svg`);
+            });
+    
+            if (materialSlots.some(slot => !slot.found)) return;
+    
+            const allEnough = requirements.every((req, i) => {
+                const slot = materialSlots[i];
+                const currentAmount = parseInt(inventory.children[slot.index].children[1].innerText);
+                return currentAmount >= req[1];
+            });
+    
+            if (!allEnough) return;
+    
+            requirements.forEach((req, i) => {
+                const slot = materialSlots[i];
+                const currentAmount = parseInt(inventory.children[slot.index].children[1].innerText);
+                const newAmount = currentAmount - req[1];
+    
+                if (newAmount > 0) {
+                    inventory.children[slot.index].children[1].innerText = newAmount;
+                } else {
+                    inventory.children[slot.index].children[0].remove();
+                    inventory.children[slot.index].children[0].remove();
+                    cursor.src = "assets/empty.svg";
+                }
+            });
+    
+            // CRAFT THE ITEM
+            collectItem(e, e.dataset.amnt)
+        }
+    
     }
-
     if(e == recpeMnuExitBtn){
         recpeMnu.classList.remove("active");
     }
 }
-function enemySpawner(enemyIndex){
-    let indx = -1;
-    //
-    enemyPositions[enemyIndex] = null;
-    //
-    const enemySpawnInterval = setInterval(() => {
-        indx++;
-        if(indx + 1 <= path.length){
-            world.children[path[indx][0]].src = "assets/enemy.svg";   
-            //
-            enemyPositions[enemyIndex] = path[indx][0];
-            world.children[path[indx][0]].dataset.amount = enemyPositions.filter(num => num === path[indx][0]).length;
-        }
-        else{
-            enemyPositions[enemyIndex] = null;      
-            let lastCount = enemyPositions.filter(num => num === path[indx - 1][0]).length;
-            world.children[path[indx - 1][0]].dataset.amount = lastCount;
+function smelt(e){
+    let iteration = 0;
 
-            if (lastCount) {
-                world.children[path[indx - 1][0]].src = path[indx - 1][1];
+    if(e.dataset.smelting == 2){
+        e.style.transform = `rotate(${0}deg)`;
+        e.dataset.smelting = 0;  
+        iteration = 0;  
+        
+        collectItem(null, 1, "assets/hl-iron.svg")
+    }
+
+    if(inventory.children[activeSlot].children.length != 0 && e.getAttribute("src") == "assets/hl-furnace.svg" 
+    && inventory.children[activeSlot].children[0].getAttribute("src") == "assets/raw-iron.svg" && e.dataset.smelting != 1){
+        let currentAmnt = inventory.children[activeSlot].children[1].innerText;
+        e.dataset.smelting = 1;    
+
+        if(currentAmnt != 1){
+            inventory.children[activeSlot].children[1].innerText = parseInt(currentAmnt) - 1; 
+        }else{
+            inventory.children[activeSlot].children[0].remove();
+            inventory.children[activeSlot].children[0].remove();
+
+            cursor.src = 'assets/empty.svg';
+        }
+        let destroyAnim;
+        let last = performance.now();
+
+        function step(now) {
+            if (!destroyAnim) return;
+
+            if (now - last >= 96) {
+                last = now;
+
+                iteration++;
+                let rndmAngle;
+                if (iteration % 2 == 0) rndmAngle = rndmNumb(-5, -7.5, true);
+                else rndmAngle = rndmNumb(5, 7.5, true);
+
+                e.style.transform = `rotate(${rndmAngle}deg)`;
             }
+            destroyAnim = requestAnimationFrame(step);
 
-            clearInterval(enemySpawnInterval); // ENEMY REACHES THE FINAL TILE
-        }
-
-        // GET RID OF THE PREVIOUS TILE
-        if(indx != 0){
-            const prevTileIndex = path[indx - 1][0];
-
-            let prevCount = enemyPositions.filter(num => num === prevTileIndex).length;
-            world.children[prevTileIndex].dataset.amount = prevCount;
-
-            if (prevCount == 0) {
-                world.children[prevTileIndex].src = path[indx - 1][1];
+            if(iteration == 10){
+                cancelAnimationFrame(destroyAnim);      
+                e.dataset.smelting = 2;
             }
         }
-        //
-    }, rndmNumb(750, 750));   
-}
-function startWave(enmyAmnt){
-    for (let i = 0; i < enmyAmnt; i++) {
-        enemySpawner(i);
+        destroyAnim = requestAnimationFrame(step);
     }
 }

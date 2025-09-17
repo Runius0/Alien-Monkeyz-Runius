@@ -1,0 +1,1 @@
+const unstackables = ["pickaxe", "axe", "stone-pickaxe", "stone-axe"];

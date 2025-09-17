@@ -4,6 +4,6 @@ let activeSlot = inventoryHandler(inventory);
 
 addItemToInventory(0, "axe", 10);
 addItemToInventory(1, "pickaxe", 10);
-addItemToInventory(2, "workbench", 1);
+addItemToInventory(6, "workbench", 1);
 
 cursor.src = inventory.children[activeSlot].children[0].getAttribute("src")
