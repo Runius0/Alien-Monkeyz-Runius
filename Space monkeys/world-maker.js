@@ -5,7 +5,7 @@ const path = [];
 
 const spriteScale = 5;
 
-const worldLength = 20;
+const worldLength = 10;
 const worldHeight = 10;
 
 const infoTxt = createElm(1, "p", null, world, null, "info-txt", null);

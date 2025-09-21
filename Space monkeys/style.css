@@ -24,10 +24,9 @@ img, #inventory .amount{
     top: 50%;
     transform: translate(-50%, -50%);
 }
-#world .ground{
+#world .ground, #world .machine, #world .machine .arm{
     position: absolute;
 }
-
 #info-txt:not(.active){
     color:#211912;
 }
@@ -98,7 +97,10 @@ img, #inventory .amount{
 }
 #recipe-menu .recipes{
     display: flex;
-    /* flex-direction: column; */
     flex-wrap: wrap;
     width: 100%;
+}
+#world .machine .arm{
+    z-index: 1;
+    pointer-events: none;
 }
