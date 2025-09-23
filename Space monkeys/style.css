@@ -10,6 +10,7 @@ body{
 *{
     -webkit-user-drag: none;
     user-select: none;
+    box-sizing: border-box;
 }
 img, #inventory .amount{
     width: calc(16px * var(--sprite-scale));
@@ -24,8 +25,30 @@ img, #inventory .amount{
     top: 50%;
     transform: translate(-50%, -50%);
 }
-#world .ground, #world .machine, #world .machine .arm{
+#world .ground, #world .machine, #world .machine .arm, #wave-start-btn{
     position: absolute;
+}
+#wave-start-btn{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 0;
+    left: -205px;
+    width: 200px;
+    height: 85px;
+    font-size: 1.25rem;
+    background-color: #d9d9d9;
+    color: #211912;
+    border-radius: 5px;
+    cursor: pointer;
+}
+#wave-start-btn:hover{
+    background-color: #211912;
+    color: #d9d9d9;
+    border: 1px solid #d9d9d9;
+}
+#wave-start-btn:not(.active){
+    display: none;
 }
 #info-txt:not(.active){
     color:#211912;
@@ -46,7 +69,7 @@ img, #inventory .amount{
     width:max-content;
     position: absolute;
     left: 50%;
-    bottom: calc(-16px * var(--sprite-scale) * 1.4);
+    bottom: calc(-16px * var(--sprite-scale) * 1.1);
     transform: translateX(-50%);
     gap: 10px;
 }

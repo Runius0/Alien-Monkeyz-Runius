@@ -3,7 +3,7 @@ function createWorld(amnt, sprite_size, world_length){
     let currCol = 0;
     for (let i = 0; i < amnt; i++) {
         const tileParent = document.createElement("span");
-
+        tileParent.dataset.index = i;
         const tile = document.createElement("img");        
         tile.src = "assets/ground.svg";
         tile.classList.add('ground');
@@ -87,9 +87,9 @@ function addPath(row_size, height_size, strucGenFunc){
         if(currTile >= (row_size * height_size) - row_size + 1){
             clearInterval(curveInterval);
 
-            strucGenFunc(100, "assets/tree.svg", 27);
+            /* strucGenFunc(100, "assets/tree.svg", 27);
             strucGenFunc(20, "assets/big-rock.svg", 29);
-            strucGenFunc(20, "assets/iron-ore.svg", 21);
+            strucGenFunc(20, "assets/iron-ore.svg", 21); */
         } 
         // ADD THE REST PATH TILE VALUES
         path.push([currTile, world.children[currTile].children[0].src])
@@ -177,15 +177,15 @@ function cursorHandler(){
         placeDownItems("iron-pickaxe", e.target);
         placeDownItems("iron-axe", e.target);
 
-        placeDownItems("rotater", e.target);
-        placeDownItems("mover", e.target);
-        placeDownItems("delayer", e.target);
-        placeDownItems("barricade", e.target);
-        placeDownItems("activator", e.target);
+        placeDownItems("rotater", e.target, 1);
+        placeDownItems("mover", e.target, 1);
+        placeDownItems("delayer", e.target, 1);
+        placeDownItems("barricade", e.target, 1);
+        placeDownItems("activator", e.target, 1);
 
-        placeDownStructures("sunsaw-body", e.target);
-        placeDownStructures("clawmachine-body", e.target);
-        placeDownStructures("shooter-body", e.target);
+        placeDownMachines("sunsaw-body", e.target);
+        placeDownMachines("clawmachine-body", e.target);
+        placeDownMachines("shooter-body", e.target);
 
         placeDownItems("workbench", e.target);
         placeDownItems("furnace", e.target);
@@ -231,9 +231,13 @@ function cursorHandler(){
         outlineAdder("gear", e.target, [["iron", 5]]);
 
         outlineAdder("rotater", e.target, [["iron", 10]]);
+        outlineAdder("ac-rotater", e.target, [["iron", 10]]);
         outlineAdder("mover", e.target, [["iron", 10]]);
+        outlineAdder("ac-mover", e.target, [["iron", 10]]);
         outlineAdder("delayer", e.target, [["iron", 10]]);
+        outlineAdder("ac-delayer", e.target, [["iron", 10]]);
         outlineAdder("barricade", e.target, [["iron", 10]]);
+        outlineAdder("ac-barricade", e.target, [["iron", 10]]);
         outlineAdder("activator", e.target, [["iron", 10]]);
 
         outlineAdder("log", e.target, rndmNumb(1, 5));
@@ -346,7 +350,10 @@ function destoryStructures(tool, struc, e, maxHp, spriteSize, drop, _speed, isMa
                     else {
                         collectItem(e, 1);
                         // HIDE RECIPE MENU WHEN THE DESTROYED STRUC IS THE WORKBENCH
-                        if(struc == "hl-workbench") recpeMnu.classList.remove("active");
+                        if(struc == "hl-workbench") {
+                            recpeMnu.classList.remove("active")
+                            delete e.dataset.redrop;
+                        };
 
                         if(isMachine == undefined){ e.dataset.destroyed = 0; e.src = `assets/ground.svg`;} 
                         else e.parentNode.remove();
@@ -409,7 +416,7 @@ function pickUpItems(itm, e){
         e.src = "assets/ground.svg";
     }
 }
-function placeDownItems(itm, e){
+function placeDownItems(itm, e, isMachine){
     if(inventory.children[activeSlot].children[0] && inventory.children[activeSlot].children[0].getAttribute("src") == `assets/${itm}.svg` &&
     e.getAttribute("src") == "assets/ground.svg"){
         e.src = `assets/${itm}.svg`;
@@ -427,9 +434,11 @@ function placeDownItems(itm, e){
             inventory.children[activeSlot].children[0].remove();
             cursor.src = "assets/empty.svg";
         }
+
+        if(isMachine) machines.push(e);
     }
 }
-function placeDownStructures(struc, e){
+function placeDownMachines(struc, e){
     if(inventory.children[activeSlot].children[0] && inventory.children[activeSlot].children[0].getAttribute("src") == `assets/${struc}.svg` &&
     e.getAttribute("src") == "assets/ground.svg"){
         const machine = createElm(1, "span", 'machine', e.parentNode);
@@ -470,10 +479,11 @@ function placeDownStructures(struc, e){
             cursor.src = "assets/empty.svg";
         }
         body.dataset.redrop = 1;
+        machines.push(e);
     }
 }
 function upgradeMachines(e){
-    if(inventory.children[activeSlot].children.length != 0 && e.parentNode.classList.contains("machine") && inventory.children[activeSlot].children[0].getAttribute("src") == "assets/gear.svg"){
+    if(inventory.children[activeSlot].children.length != 0 && inventory.children[activeSlot].children[0].getAttribute("src") == "assets/gear.svg" && e.parentNode.classList.contains("machine")){
         const hiddenArms = Array.from(e.parentNode.children).slice(1).filter(arm =>{ return arm.style.display === "none" });
         let rndmSide = rndmNumb(0, hiddenArms.length - 1);
         hiddenArms.forEach(function(arm, i){
@@ -492,6 +502,100 @@ function upgradeMachines(e){
             cursor.src = "assets/empty.svg";
         }
     }
+}
+function machinesAbility(){
+    Array.from(machines).forEach(function(machine){
+        let position = Number(machine.parentNode.dataset.index) + 1;
+        if(machine.getAttribute("src") == "assets/mover.svg"){
+            setInterval(() => {
+                world.children[position].children[0].src = "assets/ac-mover.svg";
+                switch(world.children[position].children[0].dataset.rot){
+                    case undefined:
+                        if(position % worldLength != 0 && world.children[position + 1].children[0].getAttribute("src") == "assets/ground.svg"){
+                            position++;
+                            world.children[position - 1].children[0].src = "assets/ground.svg"
+                            delete world.children[position - 1].children[0].dataset.redrop;
+
+                            world.children[position].children[0].src = "assets/ac-mover.svg"
+                            world.children[position].children[0].dataset.redrop = 1;
+                        }
+                        break;
+                    case "2":
+                        if(position % worldLength - 1 != 0 && world.children[position - 1].children[0].getAttribute("src") == "assets/ground.svg"){
+                            position--;
+                            world.children[position + 1].children[0].src = "assets/ground.svg"
+                            delete world.children[position + 1].children[0].dataset.redrop;
+
+                            world.children[position].children[0].dataset.rot = world.children[position + 1].children[0].dataset.rot;
+                            world.children[position].children[0].style.transform = `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
+                            delete world.children[position + 1].children[0].dataset.rot;
+                            world.children[position + 1].children[0].style.transform = `rotate(0)`;
+
+                            world.children[position].children[0].src = "assets/ac-mover.svg"
+                            world.children[position].children[0].dataset.redrop = 1;
+                        }
+                        break;
+                    case "1":
+                        if(position >= worldLength && world.children[position - worldLength].children[0].getAttribute("src") == "assets/ground.svg"){
+                            position -= worldLength;
+                            world.children[position + worldLength].children[0].src = "assets/ground.svg"
+                            delete world.children[position + worldLength].children[0].dataset.redrop;
+
+                            world.children[position].children[0].dataset.rot = world.children[position + worldLength].children[0].dataset.rot;
+                            world.children[position].children[0].style.transform = `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
+                            delete world.children[position + worldLength].children[0].dataset.rot;
+                            world.children[position + worldLength].children[0].style.transform = `rotate(0)`;
+
+                            world.children[position].children[0].src = "assets/ac-mover.svg"
+                            world.children[position].children[0].dataset.redrop = 1;
+                        }
+                        break;
+                    case "4":
+                        if(position % worldLength != 0 && world.children[position + 1].children[0].getAttribute("src") == "assets/ground.svg"){
+                            position++;
+
+                            world.children[position - 1].children[0].src = "assets/ground.svg"
+                            delete world.children[position - 1].children[0].dataset.redrop;
+
+                            world.children[position].children[0].dataset.rot = world.children[position - 1].children[0].dataset.rot;
+                            world.children[position].children[0].style.transform = `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
+                            delete world.children[position - 1].children[0].dataset.rot;
+                            world.children[position - 1].children[0].style.transform = `rotate(0)`;
+
+                            world.children[position].children[0].src = "assets/ac-mover.svg"
+                            world.children[position].children[0].dataset.redrop = 1;
+                        }
+                        break;
+                    case "3":
+                        if(position - 1 <= (worldLength * worldHeight) - worldLength && world.children[position + worldLength].children[0].getAttribute("src") == "assets/ground.svg"){
+                            position += worldLength;
+                            world.children[position - worldLength].children[0].src = "assets/ground.svg"
+                            delete world.children[position - 1].children[0].dataset.redrop;
+
+                            world.children[position].children[0].dataset.rot = world.children[position - worldLength].children[0].dataset.rot;
+                            world.children[position].children[0].style.transform = `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
+                            delete world.children[position - worldLength].children[0].dataset.rot;
+                            world.children[position - worldLength].children[0].style.transform = `rotate(0)`;
+
+                            world.children[position].children[0].src = "assets/ac-mover.svg"
+                            world.children[position].children[0].dataset.redrop = 1;
+                        }
+                        break;
+                }
+                if (position % worldLength != 0 && world.children[position + 1].children[0].getAttribute("src") == "assets/ac-rotater.svg" || position % worldLength - 1 != 0 && world.children[position - 1].children[0].getAttribute("src") == "assets/ac-rotater.svg"
+                || position >= worldLength && world.children[position - worldLength].children[0].getAttribute("src") == "assets/ac-rotater.svg" || position - 1 <= (worldLength * worldHeight) - worldLength && world.children[position + worldLength].children[0].getAttribute("src") == "assets/ac-rotater.svg"){
+                    if(!world.children[position].children[0].dataset.rot || world.children[position].children[0].dataset.rot == 4)
+                        world.children[position].children[0].dataset.rot = 0;
+
+                    world.children[position].children[0].dataset.rot = Number(world.children[position].children[0].dataset.rot) + 1;
+                    world.children[position].children[0].style.transform = `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
+                }
+            }, 500);
+        }
+        if(machine.getAttribute("src") == "assets/rotater.svg"){
+            world.children[position].children[0].src = "assets/ac-rotater.svg";
+        }
+    });
 }
 function findFreeSlot(inventory, targetSrc, unstackable) {
     const slots = Array.from(inventory.children);
@@ -695,4 +799,11 @@ function smelt(e){
         }
         destroyAnim = requestAnimationFrame(step);
     }
+}
+function startWave(startBtn){
+    startBtn.addEventListener("click", function(){
+        startBtn.classList.remove("active");
+
+        machinesAbility();
+    });
 }
