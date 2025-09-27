@@ -147,13 +147,11 @@ function cursorHandler(){
         destoryStructures("stone-pickaxe", "hl-rotater", e.target, 2, 0, [], 60);
         destoryStructures("stone-pickaxe", "hl-mover", e.target, 2, 0, [], 60);
         destoryStructures("stone-pickaxe", "hl-delayer", e.target, 2, 0, [], 60);
-        destoryStructures("stone-pickaxe", "hl-barricade", e.target, 2, 0, [], 60);
         destoryStructures("stone-pickaxe", "hl-activator", e.target, 2, 0, [], 60);
 
         destoryStructures("iron-pickaxe", "hl-rotater", e.target, 2, 0, [], 30);
         destoryStructures("iron-pickaxe", "hl-mover", e.target, 2, 0, [], 30);
         destoryStructures("iron-pickaxe", "hl-delayer", e.target, 2, 0, [], 30);
-        destoryStructures("iron-pickaxe", "hl-barricade", e.target, 2, 0, [], 30);
         destoryStructures("iron-pickaxe", "hl-activator", e.target, 2, 0, [], 30);
 
         destoryStructures("stone-pickaxe", "hl-sunsaw-body", e.target, 2, 0, ["iron"], 60, 1);
@@ -177,10 +175,11 @@ function cursorHandler(){
         placeDownItems("iron-pickaxe", e.target);
         placeDownItems("iron-axe", e.target);
 
+        placeDownItems("gear", e.target);
+
         placeDownItems("rotater", e.target, 1);
         placeDownItems("mover", e.target, 1);
         placeDownItems("delayer", e.target, 1);
-        placeDownItems("barricade", e.target, 1);
         placeDownItems("activator", e.target, 1);
 
         placeDownMachines("sunsaw-body", e.target);
@@ -196,6 +195,8 @@ function cursorHandler(){
         pickUpItems("hl-sapling", e.target);
         pickUpItems("hl-raw-iron", e.target);
         pickUpItems("hl-iron", e.target);
+
+        pickUpItems("hl-gear", e.target);
 
         pickUpItems("hl-pickaxe", e.target)
         pickUpItems("hl-axe", e.target)
@@ -236,9 +237,8 @@ function cursorHandler(){
         outlineAdder("ac-mover", e.target, [["iron", 10]]);
         outlineAdder("delayer", e.target, [["iron", 10]]);
         outlineAdder("ac-delayer", e.target, [["iron", 10]]);
-        outlineAdder("barricade", e.target, [["iron", 10]]);
-        outlineAdder("ac-barricade", e.target, [["iron", 10]]);
         outlineAdder("activator", e.target, [["iron", 10]]);
+        outlineAdder("ac-activator", e.target, [["iron", 10]]);
 
         outlineAdder("log", e.target, rndmNumb(1, 5));
         outlineAdder("stone", e.target, rndmNumb(1, 5));
@@ -353,12 +353,12 @@ function destoryStructures(tool, struc, e, maxHp, spriteSize, drop, _speed, isMa
                         if(struc == "hl-workbench") {
                             recpeMnu.classList.remove("active")
                             delete e.dataset.redrop;
-                        };
+                        }
 
                         if(isMachine == undefined){ e.dataset.destroyed = 0; e.src = `assets/ground.svg`;} 
                         else e.parentNode.remove();
                     }
-
+                    
                     e.style.transform = "translateY(0)";
                     infoTxt.classList.remove("active");
                     return;
@@ -424,6 +424,7 @@ function placeDownItems(itm, e, isMachine){
         if(!unstackables.includes(itm)){
             e.dataset.redrop = 1;
         }else{
+            delete e.dataset.redrop;
             e.dataset.drop = inventory.children[activeSlot].children[1].innerText;
         }
 
@@ -503,97 +504,201 @@ function upgradeMachines(e){
         }
     }
 }
-function machinesAbility(){
-    Array.from(machines).forEach(function(machine){
+function machinesAbility() {
+    Array.from(machines).forEach(function (machine) {
         let position = Number(machine.parentNode.dataset.index) + 1;
-        if(machine.getAttribute("src") == "assets/mover.svg"){
-            setInterval(() => {
-                world.children[position].children[0].src = "assets/ac-mover.svg";
-                switch(world.children[position].children[0].dataset.rot){
-                    case undefined:
-                        if(position % worldLength != 0 && world.children[position + 1].children[0].getAttribute("src") == "assets/ground.svg"){
-                            position++;
-                            world.children[position - 1].children[0].src = "assets/ground.svg"
-                            delete world.children[position - 1].children[0].dataset.redrop;
 
-                            world.children[position].children[0].src = "assets/ac-mover.svg"
-                            world.children[position].children[0].dataset.redrop = 1;
-                        }
-                        break;
-                    case "2":
-                        if(position % worldLength - 1 != 0 && world.children[position - 1].children[0].getAttribute("src") == "assets/ground.svg"){
-                            position--;
-                            world.children[position + 1].children[0].src = "assets/ground.svg"
-                            delete world.children[position + 1].children[0].dataset.redrop;
+        const isMachine = (el, machineSrc, machinesArr) => {
+            const src = el.children[0].getAttribute("src");
+            if(!machinesArr)
+                return src === `assets/ac-${machineSrc}.svg` || src === `assets/hl-ac-${machineSrc}.svg`;
+            else if(machinesArr.includes(src))
+                return src;
+        };
 
-                            world.children[position].children[0].dataset.rot = world.children[position + 1].children[0].dataset.rot;
-                            world.children[position].children[0].style.transform = `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
-                            delete world.children[position + 1].children[0].dataset.rot;
-                            world.children[position + 1].children[0].style.transform = `rotate(0)`;
+        if (machine.getAttribute("src") === "assets/mover.svg") {
 
-                            world.children[position].children[0].src = "assets/ac-mover.svg"
-                            world.children[position].children[0].dataset.redrop = 1;
-                        }
-                        break;
-                    case "1":
-                        if(position >= worldLength && world.children[position - worldLength].children[0].getAttribute("src") == "assets/ground.svg"){
-                            position -= worldLength;
-                            world.children[position + worldLength].children[0].src = "assets/ground.svg"
-                            delete world.children[position + worldLength].children[0].dataset.redrop;
+            world.children[position].children[0].src = "assets/ac-mover.svg";
 
-                            world.children[position].children[0].dataset.rot = world.children[position + worldLength].children[0].dataset.rot;
-                            world.children[position].children[0].style.transform = `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
-                            delete world.children[position + worldLength].children[0].dataset.rot;
-                            world.children[position + worldLength].children[0].style.transform = `rotate(0)`;
+            function runMover() {
+                // NORMAL TICK SPEED 
+                let nextDelay = 500;
 
-                            world.children[position].children[0].src = "assets/ac-mover.svg"
-                            world.children[position].children[0].dataset.redrop = 1;
-                        }
-                        break;
-                    case "4":
-                        if(position % worldLength != 0 && world.children[position + 1].children[0].getAttribute("src") == "assets/ground.svg"){
-                            position++;
+                const neighbors = [
+                    position + 1,          
+                    position - 1,          
+                    position - worldLength,
+                    position + worldLength 
+                ];
 
-                            world.children[position - 1].children[0].src = "assets/ground.svg"
-                            delete world.children[position - 1].children[0].dataset.redrop;
+                const hasDelayerNearby = neighbors.some(idx =>
+                    world.children[idx] && isMachine(world.children[idx], "delayer")
+                );
 
-                            world.children[position].children[0].dataset.rot = world.children[position - 1].children[0].dataset.rot;
-                            world.children[position].children[0].style.transform = `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
-                            delete world.children[position - 1].children[0].dataset.rot;
-                            world.children[position - 1].children[0].style.transform = `rotate(0)`;
+                if (hasDelayerNearby) nextDelay = 2000;
 
-                            world.children[position].children[0].src = "assets/ac-mover.svg"
-                            world.children[position].children[0].dataset.redrop = 1;
-                        }
-                        break;
-                    case "3":
-                        if(position - 1 <= (worldLength * worldHeight) - worldLength && world.children[position + worldLength].children[0].getAttribute("src") == "assets/ground.svg"){
-                            position += worldLength;
-                            world.children[position - worldLength].children[0].src = "assets/ground.svg"
-                            delete world.children[position - 1].children[0].dataset.redrop;
+                setTimeout(() => {
+                    const hasRotaterNearby =
+                        (position % worldLength !== 0 && isMachine(world.children[position + 1], "rotater")) ||
+                        (position % worldLength - 1 !== 0 && isMachine(world.children[position - 1], "rotater")) ||
+                        (position >= worldLength && isMachine(world.children[position - worldLength], "rotater")) ||
+                        (position - 1 <= (worldLength * worldHeight) - worldLength && isMachine(world.children[position + worldLength], "rotater"));
 
-                            world.children[position].children[0].dataset.rot = world.children[position - worldLength].children[0].dataset.rot;
-                            world.children[position].children[0].style.transform = `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
-                            delete world.children[position - worldLength].children[0].dataset.rot;
-                            world.children[position - worldLength].children[0].style.transform = `rotate(0)`;
+                    if (hasRotaterNearby) {
+                        if (!world.children[position].children[0].dataset.rot || world.children[position].children[0].dataset.rot == 4)
+                            world.children[position].children[0].dataset.rot = 0;
 
-                            world.children[position].children[0].src = "assets/ac-mover.svg"
-                            world.children[position].children[0].dataset.redrop = 1;
-                        }
-                        break;
-                }
-                if (position % worldLength != 0 && world.children[position + 1].children[0].getAttribute("src") == "assets/ac-rotater.svg" || position % worldLength - 1 != 0 && world.children[position - 1].children[0].getAttribute("src") == "assets/ac-rotater.svg"
-                || position >= worldLength && world.children[position - worldLength].children[0].getAttribute("src") == "assets/ac-rotater.svg" || position - 1 <= (worldLength * worldHeight) - worldLength && world.children[position + worldLength].children[0].getAttribute("src") == "assets/ac-rotater.svg"){
-                    if(!world.children[position].children[0].dataset.rot || world.children[position].children[0].dataset.rot == 4)
-                        world.children[position].children[0].dataset.rot = 0;
+                        world.children[position].children[0].dataset.rot =
+                            Number(world.children[position].children[0].dataset.rot) + 1;
+                        world.children[position].children[0].style.transform =
+                            `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
+                    }
 
-                    world.children[position].children[0].dataset.rot = Number(world.children[position].children[0].dataset.rot) + 1;
-                    world.children[position].children[0].style.transform = `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
-                }
-            }, 500);
+                    // PUSHABLE MACHINES
+                    if (isMachine(world.children[position + 1], "", pushableMachines) && (position + 1) % worldLength != 0 && world.children[position + 2].children[0].getAttribute("src") == "assets/ground.svg" &&
+                    world.children[position].children[0].dataset.rot == undefined || world.children[position].children[0].dataset.rot == "4") {
+                        world.children[position + 2].children[0].src = isMachine(world.children[position + 1], "", pushableMachines);
+
+                        world.children[position + 1].children[0].src = "assets/ground.svg";
+                        delete world.children[position + 1].children[0].dataset.redrop;
+                        
+                        world.children[position + 2].children[0].dataset.redrop = 1;
+                    }
+                    if (isMachine(world.children[position - 1], "", pushableMachines) && (position - 2) % worldLength != 0 && world.children[position - 2].children[0].getAttribute("src") == "assets/ground.svg" &&
+                    world.children[position].children[0].dataset.rot == "2") {
+                        world.children[position - 2].children[0].src = isMachine(world.children[position - 1], "", pushableMachines);
+
+                        world.children[position - 1].children[0].src = "assets/ground.svg";
+                        delete world.children[position - 1].children[0].dataset.redrop;
+
+                        world.children[position - 2].children[0].dataset.redrop = 1;
+                    }
+                    if (isMachine(world.children[position - worldLength], "", pushableMachines) && position - worldLength >= worldLength && world.children[position - (worldLength * 2)].children[0].getAttribute("src") == "assets/ground.svg" &&
+                    world.children[position].children[0].dataset.rot == "1") 
+                    {
+                        world.children[position - (worldLength * 2)].children[0].src = isMachine(world.children[position  - worldLength], "", pushableMachines);
+                        
+                        world.children[position - worldLength].children[0].src = "assets/ground.svg";
+                        delete world.children[position - worldLength].children[0].dataset.redrop;
+
+                        world.children[position - (worldLength * 2)].children[0].dataset.redrop = 1;
+                    }
+                    if (isMachine(world.children[position + worldLength], "", pushableMachines) && position + worldLength <= (worldLength * worldHeight) - worldLength && world.children[position + (worldLength * 2)].children[0].getAttribute("src") == "assets/ground.svg" &&
+                    world.children[position].children[0].dataset.rot == "3") 
+                    {
+                        world.children[position + worldHeight].children[0].src = "assets/ground.svg";
+                        delete world.children[position + worldHeight].children[0].dataset.redrop;
+
+                        world.children[position + (worldHeight * 2)].children[0].src = isMachine(world.children[position + worldLength], "", pushableMachines);
+                        world.children[position + (worldHeight * 2)].children[0].dataset.redrop = 1;
+                    }
+                    //
+
+                    switch (world.children[position].children[0].dataset.rot) {
+                        case undefined:
+                            if (position % worldLength != 0 &&
+                                world.children[position + 1].children[0].getAttribute("src") == "assets/ground.svg") {
+                                position++;
+                                world.children[position - 1].children[0].src = "assets/ground.svg";
+                                delete world.children[position - 1].children[0].dataset.redrop;
+
+                                world.children[position].children[0].src = "assets/ac-mover.svg";
+                                world.children[position].children[0].dataset.redrop = 1;
+                            }
+                            break;
+
+                        case "2":
+                            if (position % worldLength - 1 != 0 &&
+                                world.children[position - 1].children[0].getAttribute("src") == "assets/ground.svg") {
+                                position--;
+                                world.children[position + 1].children[0].src = "assets/ground.svg";
+                                delete world.children[position + 1].children[0].dataset.redrop;
+
+                                world.children[position].children[0].dataset.rot =
+                                    world.children[position + 1].children[0].dataset.rot;
+                                world.children[position].children[0].style.transform =
+                                    `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
+                                delete world.children[position + 1].children[0].dataset.rot;
+                                world.children[position + 1].children[0].style.transform = `rotate(0)`;
+
+                                world.children[position].children[0].src = "assets/ac-mover.svg";
+                                world.children[position].children[0].dataset.redrop = 1;
+                            }
+                            break;
+
+                        case "1":
+                            if (position >= worldLength &&
+                                world.children[position - worldLength].children[0].getAttribute("src") == "assets/ground.svg") {
+                                position -= worldLength;
+                                world.children[position + worldLength].children[0].src = "assets/ground.svg";
+                                delete world.children[position + worldLength].children[0].dataset.redrop;
+
+                                world.children[position].children[0].dataset.rot =
+                                    world.children[position + worldLength].children[0].dataset.rot;
+                                world.children[position].children[0].style.transform =
+                                    `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
+                                delete world.children[position + worldLength].children[0].dataset.rot;
+                                world.children[position + worldLength].children[0].style.transform = `rotate(0)`;
+
+                                world.children[position].children[0].src = "assets/ac-mover.svg";
+                                world.children[position].children[0].dataset.redrop = 1;
+                            }
+                            break;
+
+                        case "4":
+                            if (position % worldLength != 0 &&
+                                world.children[position + 1].children[0].getAttribute("src") == "assets/ground.svg") {
+                                position++;
+                                world.children[position - 1].children[0].src = "assets/ground.svg";
+                                delete world.children[position - 1].children[0].dataset.redrop;
+
+                                world.children[position].children[0].dataset.rot =
+                                    world.children[position - 1].children[0].dataset.rot;
+                                world.children[position].children[0].style.transform =
+                                    `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
+                                delete world.children[position - 1].children[0].dataset.rot;
+                                world.children[position - 1].children[0].style.transform = `rotate(0)`;
+
+                                world.children[position].children[0].src = "assets/ac-mover.svg";
+                                world.children[position].children[0].dataset.redrop = 1;
+                            }
+                            break;
+
+                        case "3":
+                            if (position - 1 <= (worldLength * worldHeight) - worldLength &&
+                                world.children[position + worldLength].children[0].getAttribute("src") == "assets/ground.svg") {
+                                position += worldLength;
+                                world.children[position - worldLength].children[0].src = "assets/ground.svg";
+                                delete world.children[position - worldLength].children[0].dataset.redrop;
+
+                                world.children[position].children[0].dataset.rot =
+                                    world.children[position - worldLength].children[0].dataset.rot;
+                                world.children[position].children[0].style.transform =
+                                    `rotate(-${Number(world.children[position].children[0].dataset.rot) * 90}deg)`;
+                                delete world.children[position - worldLength].children[0].dataset.rot;
+                                world.children[position - worldLength].children[0].style.transform = `rotate(0)`;
+
+                                world.children[position].children[0].src = "assets/ac-mover.svg";
+                                world.children[position].children[0].dataset.redrop = 1;
+                            }
+                            break;
+                    }
+
+                runMover();
+                }, nextDelay);
+            }
+
+            runMover();
         }
-        if(machine.getAttribute("src") == "assets/rotater.svg"){
+
+        if (machine.getAttribute("src") === "assets/rotater.svg") {
             world.children[position].children[0].src = "assets/ac-rotater.svg";
+        }
+        if (machine.getAttribute("src") === "assets/delayer.svg") {
+            world.children[position].children[0].src = "assets/ac-delayer.svg";
+        }
+        if (machine.getAttribute("src") === "assets/activator.svg") {
+            world.children[position].children[0].src = "assets/ac-activator.svg";
         }
     });
 }

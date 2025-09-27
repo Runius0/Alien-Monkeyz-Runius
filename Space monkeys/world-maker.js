@@ -5,8 +5,8 @@ const path = [];
 
 const spriteScale = 5;
 
-const worldLength = 10;
-const worldHeight = 10;
+const worldLength = 15;
+const worldHeight = 15;
 
 const infoTxt = createElm(1, "p", null, world, null, "info-txt", null);
 infoTxt.style.height = `${(16 * spriteScale) * worldHeight}px`;
@@ -16,4 +16,4 @@ world.style.width = `${(16 * spriteScale) * worldLength}px`;
 world.style.height = `${(16 * spriteScale) * worldHeight}px`;
 
 createWorld(worldLength * worldHeight, 16 * spriteScale, worldLength);
-addPath(worldLength, worldHeight, generateStructures);
+/* addPath(worldLength, worldHeight, generateStructures); */

@@ -4,8 +4,10 @@ let activeSlot = inventoryHandler(inventory);
 
 addItemToInventory(0, "stone-pickaxe", 15);
 addItemToInventory(1, "stone-axe", 15);
-addItemToInventory(2, "mover", 6);
-addItemToInventory(3, "rotater", 6);
+addItemToInventory(2, "mover", 100);
+addItemToInventory(3, "rotater", 100);
+addItemToInventory(4, "delayer", 100);
+addItemToInventory(5, "activator", 100);
 
 addItemToInventory(9, "workbench", 1);
 
