@@ -44,81 +44,90 @@ function rndmNumb(min, max, float){
     else
         return Math.random() * (max - min + 1) + min
 }
-function addPath(row_size, height_size, strucGenFunc){
-    let startTile = rndmNumb(1, (row_size / 2) - 1);
-    world.children[startTile].children[0].src = "assets/path.svg";
-    
-    let rndmPathHeight = rndmNumb(1, height_size - 2);
-    let rndmPathWidth = rndmNumb(1, row_size);
+let runningPaths = 0;
+function addPath(row_size, height_size){
+    runningPaths++;
 
-    let currPathHeight = -1;
-    let currPathWidth = 0;
+    return new Promise(resolve => {
+        let startTile = rndmNumb(1, (row_size / 2) - 1);
+        world.children[startTile].children[0].src = "assets/path.svg";
+        
+        let rndmPathHeight = rndmNumb(1, height_size - 2);
+        let rndmPathWidth = rndmNumb(1, row_size);
 
-    let currTile;
+        let currPathHeight = -1;
+        let currPathWidth = 0;
 
-    // ADD THE INITIAL PATH TILE VALUES
-    path.push([startTile, "assets/path.svg"])
+        let currTile;
 
-    const curveInterval = setInterval(() => {
-        // ADD PATH INDEXES TO AN ARRAY
-        if(currPathHeight != rndmPathHeight - 1){
-            currPathHeight++;
-            currTile = ((startTile * 2 + (row_size - startTile)) + row_size * currPathHeight);
-            world.children[currTile].children[0].src = "assets/path.svg";
-        }else if(currPathWidth != rndmPathWidth){
-            currPathWidth++;
-            currTile = ((startTile * 2 + (row_size - startTile)) + row_size * currPathHeight) + currPathWidth;
+        // ADD THE INITIAL PATH TILE VALUES
+        path.push([startTile, "assets/path.svg"])
 
-            // ONE EXCEPTION WHEN THE PATH IS IN THE BOTTOM LEFT CORNER MAKE THE TILE VERTICAL
-            if(currTile == (row_size * height_size) - row_size + 1)
+        const curveInterval = setInterval(() => {
+            // ADD PATH INDEXES TO AN ARRAY
+            if(currPathHeight != rndmPathHeight - 1){
+                currPathHeight++;
+                currTile = ((startTile * 2 + (row_size - startTile)) + row_size * currPathHeight);
                 world.children[currTile].children[0].src = "assets/path.svg";
-            else
-                world.children[currTile].children[0].src = "assets/path-r.svg";
-        }
-        if(currPathWidth == rndmPathWidth && currPathHeight == rndmPathHeight - 1){
-            startTile = currTile;
-            //
-            currPathHeight = -1;
-            rndmPathHeight =  rndmNumb(1, height_size - 2);
-            currPathWidth = 0;
-            rndmPathWidth = rndmNumb(1, row_size);
-        }
-        // STOP CREATING THE PATH WHEN WE GO ONTO THE LAST ROW OF THE WORLD
-        if(currTile >= (row_size * height_size) - row_size + 1){
-            clearInterval(curveInterval);
+            }else if(currPathWidth != rndmPathWidth){
+                currPathWidth++;
+                currTile = ((startTile * 2 + (row_size - startTile)) + row_size * currPathHeight) + currPathWidth;
 
-            /* strucGenFunc(100, "assets/tree.svg", 27);
-            strucGenFunc(20, "assets/big-rock.svg", 29);
-            strucGenFunc(20, "assets/iron-ore.svg", 21); */
-        } 
-        // ADD THE REST PATH TILE VALUES
-        path.push([currTile, world.children[currTile].children[0].src])
-    }, 50);
+                // ONE EXCEPTION WHEN THE PATH IS IN THE BOTTOM LEFT CORNER MAKE THE TILE VERTICAL
+                if(currTile == (row_size * height_size) - row_size + 1)
+                    world.children[currTile].children[0].src = "assets/path.svg";
+                else
+                    world.children[currTile].children[0].src = "assets/path-r.svg";
+            }
+            if(currPathWidth == rndmPathWidth && currPathHeight == rndmPathHeight - 1){
+                startTile = currTile;
+                //
+                currPathHeight = -1;
+                rndmPathHeight =  rndmNumb(1, height_size - 2);
+                currPathWidth = 0;
+                rndmPathWidth = rndmNumb(1, row_size);
+            }
+            // ADD THE REST PATH TILE VALUES
+            path.push([currTile, world.children[currTile].children[0].src]);
+
+            // STOP CREATING THE PATH WHEN WE GO ONTO THE LAST ROW OF THE WORLD
+            if(currTile >= (row_size * height_size) - row_size + 1){
+                clearInterval(curveInterval);
+
+                runningPaths--;
+
+                resolve(); 
+            } 
+        }, 50);
+    });
 }
 function generateStructures(amnt, source, struc_size){
-    let rndmTile;
-    let counter = 0;
-    const strucGenInterval = setInterval(() => {
-        counter++;
-        rndmTile = rndmNumb(1, world.children.length - 1);
-        if(world.children[rndmTile].children[0].getAttribute("src") == "assets/path.svg" ||
-        world.children[rndmTile].children[0].getAttribute("src") == "assets/path-r.svg")
-        {
-            if(world.children[rndmTile].children[0].getAttribute("src") == "assets/path.svg")
-                world.children[rndmTile].children[0].src = "assets/path.svg";
-            if(world.children[rndmTile].children[0].getAttribute("src") == "assets/path-r.svg")
-                world.children[rndmTile].children[0].src = "assets/path-r.svg";
-                
-            world.children[rndmTile].children[0].style.transform = `translateY(${0}px)`;
-        }
-        else if(world.children[rndmTile].children[0].nodeName.toLowerCase() == "img" && world.children[rndmTile].children[0].getAttribute("src") == "assets/ground.svg"){
-            world.children[rndmTile].children[0].src = source;
-            world.children[rndmTile].children[0].style.transform = `translateY(-${struc_size * 2}px)`;
-        }
-        if(counter == amnt){
-            clearInterval(strucGenInterval);
-        }
-    }, 1);
+    return new Promise(resolve => {
+        let rndmTile;
+        let counter = 0;
+        const strucGenInterval = setInterval(() => {
+            counter++;
+            rndmTile = rndmNumb(1, world.children.length - 3);
+            if(world.children[rndmTile].children[0].getAttribute("src") == "assets/path.svg" ||
+            world.children[rndmTile].children[0].getAttribute("src") == "assets/path-r.svg")
+            {
+                if(world.children[rndmTile].children[0].getAttribute("src") == "assets/path.svg")
+                    world.children[rndmTile].children[0].src = "assets/path.svg";
+                if(world.children[rndmTile].children[0].getAttribute("src") == "assets/path-r.svg")
+                    world.children[rndmTile].children[0].src = "assets/path-r.svg";
+                    
+                world.children[rndmTile].children[0].style.transform = `translateY(${0}px)`;
+            }
+            else if(world.children[rndmTile].children[0].nodeName.toLowerCase() == "img" && world.children[rndmTile].children[0].getAttribute("src") == "assets/ground.svg"){
+                world.children[rndmTile].children[0].src = source;
+                world.children[rndmTile].children[0].style.transform = `translateY(-${struc_size * 2}px)`;
+            }
+            if(counter == amnt){
+                clearInterval(strucGenInterval);
+                resolve();
+            }
+        }, 1);
+    });
 }
 function cursorHandler(){
     let cursorX;
@@ -136,31 +145,31 @@ function cursorHandler(){
         destoryStructures("stone-pickaxe", "hl-iron-ore", e.target, 15, 21, ["raw-iron"], 60);
         destoryStructures("iron-pickaxe", "hl-iron-ore", e.target, 15, 21, ["raw-iron"], 30);
         
-        destoryStructures("pickaxe", "hl-furnace", e.target, 2, 0, [], 96);
-        destoryStructures("stone-pickaxe", "hl-furnace", e.target, 2, 0, [], 60);
-        destoryStructures("iron-pickaxe", "hl-furnace", e.target, 2, 0, [], 30);
+        destoryStructures("pickaxe", "hl-furnace", e.target, 1, 0, [], 96);
+        destoryStructures("stone-pickaxe", "hl-furnace", e.target, 1, 0, [], 60);
+        destoryStructures("iron-pickaxe", "hl-furnace", e.target, 1, 0, [], 30);
         
-        destoryStructures("axe", "hl-workbench", e.target, 2, 0, [], 96);
-        destoryStructures("stone-axe", "hl-workbench", e.target, 2, 0, [], 60);
-        destoryStructures("iron-axe", "hl-workbench", e.target, 2, 0, [], 30);
+        destoryStructures("axe", "hl-workbench", e.target, 1, 0, [], 96);
+        destoryStructures("stone-axe", "hl-workbench", e.target, 1, 0, [], 60);
+        destoryStructures("iron-axe", "hl-workbench", e.target, 1, 0, [], 30);
 
-        destoryStructures("stone-pickaxe", "hl-rotater", e.target, 2, 0, [], 60);
-        destoryStructures("stone-pickaxe", "hl-mover", e.target, 2, 0, [], 60);
-        destoryStructures("stone-pickaxe", "hl-delayer", e.target, 2, 0, [], 60);
-        destoryStructures("stone-pickaxe", "hl-activator", e.target, 2, 0, [], 60);
+        destoryStructures("stone-pickaxe", "hl-rotater", e.target, 1, 0, [], 60);
+        destoryStructures("stone-pickaxe", "hl-mover", e.target, 1, 0, [], 60);
+        destoryStructures("stone-pickaxe", "hl-delayer", e.target, 1, 0, [], 60);
+        destoryStructures("stone-pickaxe", "hl-activator", e.target, 1, 0, [], 60);
 
-        destoryStructures("iron-pickaxe", "hl-rotater", e.target, 2, 0, [], 30);
-        destoryStructures("iron-pickaxe", "hl-mover", e.target, 2, 0, [], 30);
-        destoryStructures("iron-pickaxe", "hl-delayer", e.target, 2, 0, [], 30);
-        destoryStructures("iron-pickaxe", "hl-activator", e.target, 2, 0, [], 30);
+        destoryStructures("iron-pickaxe", "hl-rotater", e.target, 1, 0, [], 30);
+        destoryStructures("iron-pickaxe", "hl-mover", e.target, 1, 0, [], 30);
+        destoryStructures("iron-pickaxe", "hl-delayer", e.target, 1, 0, [], 30);
+        destoryStructures("iron-pickaxe", "hl-activator", e.target, 1, 0, [], 30);
 
-        destoryStructures("stone-pickaxe", "hl-sunsaw-body", e.target, 2, 0, ["iron"], 60, 1);
-        destoryStructures("stone-pickaxe", "hl-clawmachine-body", e.target, 2, 0, ["iron"], 60, 1);
-        destoryStructures("stone-pickaxe", "hl-shooter-body", e.target, 2, 0, ["iron"], 60, 1);
+        destoryStructures("stone-pickaxe", "hl-sunsaw-body", e.target, 1, 0, ["iron"], 60, 1);
+        destoryStructures("stone-pickaxe", "hl-clawmachine-body", e.target, 1, 0, ["iron"], 60, 1);
+        destoryStructures("stone-pickaxe", "hl-shooter-body", e.target, 1, 0, ["iron"], 60, 1);
 
-        destoryStructures("iron-pickaxe", "hl-sunsaw-body", e.target, 2, 0, [], 30, 1);
-        destoryStructures("iron-pickaxe", "hl-clawmachine-body", e.target, 2, 0, [], 30, 1);
-        destoryStructures("iron-pickaxe", "hl-shooter-body", e.target, 2, 0, [], 30, 1);
+        destoryStructures("iron-pickaxe", "hl-sunsaw-body", e.target, 1, 0, [], 30, 1);
+        destoryStructures("iron-pickaxe", "hl-clawmachine-body", e.target, 1, 0, [], 30, 1);
+        destoryStructures("iron-pickaxe", "hl-shooter-body", e.target, 1, 0, [], 30, 1);
 
         placeDownItems("log", e.target);
         placeDownItems("stone", e.target);
@@ -205,7 +214,9 @@ function cursorHandler(){
         pickUpItems("hl-iron-pickaxe", e.target);
         pickUpItems("hl-iron-axe", e.target);
         
-        smelt(e.target);
+        smelt(e.target, "raw-iron", "iron");
+        smelt(e.target, "axe", "log");
+        smelt(e.target, "sapling", "log");
         upgradeMachines(e.target);
     });    
  
@@ -246,6 +257,7 @@ function cursorHandler(){
         outlineAdder("iron", e.target, rndmNumb(1, 10));
 
         outlineAdder("sunsaw-body", e.target, [["iron", 10]]);
+        outlineAdder("ac-sunsaw-body", e.target, [["iron", 10]]);
         outlineAdder("clawmachine-body", e.target, [["iron", 10]]);
         outlineAdder("shooter-body", e.target, [["iron", 10]]);
     });
@@ -338,13 +350,11 @@ function destoryStructures(tool, struc, e, maxHp, spriteSize, drop, _speed, isMa
                     e.destroyAnimRunning = false;
 
                     if(drop) {
+                        e.src = `assets/${drop}.svg`;
+                        e.dataset.drop = 0
                         if(isMachine != undefined){
-                            e.parentNode.parentNode.children[0].dataset.drop = 0
-                            e.parentNode.parentNode.children[0].src = `assets/${drop}.svg`;
-                            e.parentNode.remove();
-                        }else{
-                            e.dataset.drop = 0
-                            e.src = `assets/${drop}.svg`;
+                            e.parentNode.children[1].remove();
+                            delete e.dataset.redrop;
                         }
                     }  
                     else {
@@ -354,9 +364,11 @@ function destoryStructures(tool, struc, e, maxHp, spriteSize, drop, _speed, isMa
                             recpeMnu.classList.remove("active")
                             delete e.dataset.redrop;
                         }
-
-                        if(isMachine == undefined){ e.dataset.destroyed = 0; e.src = `assets/ground.svg`;} 
-                        else e.parentNode.remove();
+                        
+                        e.dataset.destroyed = 0;
+                        e.src = `assets/ground.svg`;
+                        if(isMachine != undefined)
+                            e.parentNode.children[1].remove();
                     }
                     
                     e.style.transform = "translateY(0)";
@@ -393,7 +405,8 @@ function pickUpItems(itm, e){
 
     if (e.getAttribute("src") == `assets/${itm}.svg`){
         infoTxt.classList.remove("active");
-        let slot = findFreeSlot(inventory, `assets/${itm.slice(3)}.svg`);
+        let stackableStatus = (unstackables.includes(itm.slice(3))) ? false : true;
+        let slot = findFreeSlot(inventory, `assets/${itm.slice(3)}.svg`, stackableStatus);
         
         if(!slot.found){
             createElm(1, "img", "item", inventory.children[slot.index], `assets/${itm.slice(3)}.svg`);
@@ -443,7 +456,6 @@ function placeDownMachines(struc, e){
     if(inventory.children[activeSlot].children[0] && inventory.children[activeSlot].children[0].getAttribute("src") == `assets/${struc}.svg` &&
     e.getAttribute("src") == "assets/ground.svg"){
         const machine = createElm(1, "span", 'machine', e.parentNode);
-        const body = createElm(1, "img", 'machine', machine, `assets/${struc}.svg`);
         const armR = createElm(1, "img", 'arm', machine, `assets/${struc.replace("body", "arm")}.svg`);
         const armL = createElm(1, "img", 'arm', machine, `assets/${struc.replace("body", "arm")}.svg`);
         const armU = createElm(1, "img", 'arm', machine, `assets/${struc.replace("body", "arm")}.svg`);
@@ -453,23 +465,16 @@ function placeDownMachines(struc, e){
         machine.style.top = e.style.top;
 
         let rndmSide = rndmNumb(0, 3);
-        Array.from(machine.children).slice(1).forEach(function(arm, i){
+        Array.from(machine.children).forEach(function(arm, i){
             arm.style.display = (i == rndmSide) ? "block" : "none";
         });
         //
-        armR.style.left = `${16 * spriteScale}px`;
         armR.classList.add("right");
         //
-        armL.style.left = `${-16 * spriteScale}px`;
-        armL.style.rotate = "180deg";
         armL.classList.add("left");
         //
-        armU.style.top = `${16 * spriteScale}px`;
-        armU.style.rotate = "90deg";
         armU.classList.add("down");
         //
-        armD.style.top = `${-16 * spriteScale}px`;
-        armD.style.rotate = "-90deg";
         armD.classList.add("up");
       
         if(inventory.children[activeSlot].children[1].innerText != 1)
@@ -479,28 +484,32 @@ function placeDownMachines(struc, e){
             inventory.children[activeSlot].children[0].remove();
             cursor.src = "assets/empty.svg";
         }
-        body.dataset.redrop = 1;
+        e.dataset.redrop = 1;
+        e.src = `assets/${struc}.svg`;
         machines.push(e);
     }
 }
 function upgradeMachines(e){
-    if(inventory.children[activeSlot].children.length != 0 && inventory.children[activeSlot].children[0].getAttribute("src") == "assets/gear.svg" && e.parentNode.classList.contains("machine")){
-        const hiddenArms = Array.from(e.parentNode.children).slice(1).filter(arm =>{ return arm.style.display === "none" });
+    if(inventory.children[activeSlot].children.length != 0 && inventory.children[activeSlot].children[0].getAttribute("src") == "assets/gear.svg" && e.parentNode.children[1].classList.contains("machine")){
+        const hiddenArms = Array.from(e.parentNode.children[1].children).filter(arm =>{ return arm.style.display === "none" });
         let rndmSide = rndmNumb(0, hiddenArms.length - 1);
         hiddenArms.forEach(function(arm, i){
+            console.log(hiddenArms.length - 1);
             if(i == rndmSide)
             {
                 arm.style.display = "block";
                 return;
             }
         });
-
-        if(inventory.children[activeSlot].children[1].innerText != 1)
-            inventory.children[activeSlot].children[1].innerText = parseInt(inventory.children[activeSlot].children[1].innerText) - 1;
-        else{
-            inventory.children[activeSlot].children[0].remove();
-            inventory.children[activeSlot].children[0].remove();
-            cursor.src = "assets/empty.svg";
+        
+        if(hiddenArms.length - 1 > 0){
+            if(inventory.children[activeSlot].children[1].innerText != 1)
+                inventory.children[activeSlot].children[1].innerText = parseInt(inventory.children[activeSlot].children[1].innerText) - 1;
+            else{
+                inventory.children[activeSlot].children[0].remove();
+                inventory.children[activeSlot].children[0].remove();
+                cursor.src = "assets/empty.svg";
+            }
         }
     }
 }
@@ -508,14 +517,28 @@ function machinesAbility() {
     Array.from(machines).forEach(function (machine) {
         let position = Number(machine.parentNode.dataset.index) + 1;
 
-        const isMachine = (el, machineSrc, machinesArr) => {
+       const isMachine = (el, machineSrc, machinesArr) => {
             const src = el.children[0].getAttribute("src");
-            if(!machinesArr)
-                return src === `assets/ac-${machineSrc}.svg` || src === `assets/hl-ac-${machineSrc}.svg`;
-            else if(machinesArr.includes(src))
-                return src;
-        };
 
+            // no array: single machine
+            if (!machinesArr) {
+                if (
+                    src === `assets/ac-${machineSrc}.svg` ||
+                    src === `assets/hl-ac-${machineSrc}.svg`
+                ) {
+                    return src; // ✅ return the matched src
+                }
+                return null;
+            }
+
+            // array: multiple machine types
+            const matched = machinesArr.find(type =>
+                src === `assets/ac-${type}.svg` ||
+                src === `assets/hl-ac-${type}.svg`
+            );
+
+            return matched ? src.replace("hl-", "") : null; // ✅ return src if any match, else null
+        };
         if (machine.getAttribute("src") === "assets/mover.svg") {
 
             world.children[position].children[0].src = "assets/ac-mover.svg";
@@ -557,40 +580,89 @@ function machinesAbility() {
                     // PUSHABLE MACHINES
                     if (isMachine(world.children[position + 1], "", pushableMachines) && (position + 1) % worldLength != 0 && world.children[position + 2].children[0].getAttribute("src") == "assets/ground.svg" &&
                     world.children[position].children[0].dataset.rot == undefined || world.children[position].children[0].dataset.rot == "4") {
-                        world.children[position + 2].children[0].src = isMachine(world.children[position + 1], "", pushableMachines);
+                        if(isMachine(world.children[position + 1], "", pushableMachines) != null) {
+                            if(world.children[position + 1].children.length == 1){
+                                world.children[position + 2].children[0].src = isMachine(world.children[position + 1], "", pushableMachines);
+        
+                                world.children[position + 1].children[0].src = "assets/ground.svg";
+                                delete world.children[position + 1].children[0].dataset.redrop;
+                                
+                                world.children[position + 2].children[0].dataset.redrop = 1;
+                            }else{
+                                //
+                                setTimeout(() => {
+                                    world.children[position + 2].appendChild(world.children[position + 1].children[1]);
 
-                        world.children[position + 1].children[0].src = "assets/ground.svg";
-                        delete world.children[position + 1].children[0].dataset.redrop;
-                        
-                        world.children[position + 2].children[0].dataset.redrop = 1;
+                                    world.children[position + 2].children[1].style.left = world.children[position + 2].children[0].style.left;
+                                    world.children[position + 2].children[1].style.top = world.children[position + 2].children[0].style.top; 
+                                }, nextDelay);
+                            }
+                        }
                     }
                     if (isMachine(world.children[position - 1], "", pushableMachines) && (position - 2) % worldLength != 0 && world.children[position - 2].children[0].getAttribute("src") == "assets/ground.svg" &&
                     world.children[position].children[0].dataset.rot == "2") {
-                        world.children[position - 2].children[0].src = isMachine(world.children[position - 1], "", pushableMachines);
+                        if(isMachine(world.children[position - 1], "", pushableMachines) != null) {
+                            if(world.children[position - 1].children.length == 1){
+                                world.children[position - 2].children[0].src = isMachine(world.children[position - 1], "", pushableMachines);
+        
+                                world.children[position - 1].children[0].src = "assets/ground.svg";
+                                delete world.children[position - 1].children[0].dataset.redrop;
+        
+                                world.children[position - 2].children[0].dataset.redrop = 1;
+                            }else{
+                                //
+                                setTimeout(() => {
+                                    world.children[position - 2].appendChild(world.children[position - 1].children[1]);
 
-                        world.children[position - 1].children[0].src = "assets/ground.svg";
-                        delete world.children[position - 1].children[0].dataset.redrop;
-
-                        world.children[position - 2].children[0].dataset.redrop = 1;
+                                    world.children[position - 2].children[1].style.left = world.children[position - 2].children[0].style.left;
+                                    world.children[position - 2].children[1].style.top = world.children[position - 2].children[0].style.top;
+                                }, nextDelay);
+                            }
+                        }
                     }
                     if (isMachine(world.children[position - worldLength], "", pushableMachines) && position - worldLength >= worldLength && world.children[position - (worldLength * 2)].children[0].getAttribute("src") == "assets/ground.svg" &&
                     world.children[position].children[0].dataset.rot == "1") 
                     {
-                        world.children[position - (worldLength * 2)].children[0].src = isMachine(world.children[position  - worldLength], "", pushableMachines);
-                        
-                        world.children[position - worldLength].children[0].src = "assets/ground.svg";
-                        delete world.children[position - worldLength].children[0].dataset.redrop;
+                        if(isMachine(world.children[position - worldLength], "", pushableMachines) != null) {
+                            if(world.children[position - worldLength].children.length == 1){
+                                world.children[position - (worldLength * 2)].children[0].src = isMachine(world.children[position  - worldLength], "", pushableMachines);
+                                
+                                world.children[position - worldLength].children[0].src = "assets/ground.svg";
+                                delete world.children[position - worldLength].children[0].dataset.redrop;
+    
+                                world.children[position - (worldLength * 2)].children[0].dataset.redrop = 1;
+                            }else{
+                                //
+                                setTimeout(() => {
+                                    world.children[position - (worldLength * 2)].appendChild(world.children[position - worldLength].children[1]);
 
-                        world.children[position - (worldLength * 2)].children[0].dataset.redrop = 1;
+                                    world.children[position - (worldLength * 2)].children[1].style.left = world.children[position - (worldLength * 2)].children[0].style.left;
+                                    world.children[position - (worldLength * 2)].children[1].style.top = world.children[position - (worldLength * 2)].children[0].style.top;
+                                }, nextDelay);                                
+                            }
+                        }
                     }
                     if (isMachine(world.children[position + worldLength], "", pushableMachines) && position + worldLength <= (worldLength * worldHeight) - worldLength && world.children[position + (worldLength * 2)].children[0].getAttribute("src") == "assets/ground.svg" &&
                     world.children[position].children[0].dataset.rot == "3") 
                     {
-                        world.children[position + worldHeight].children[0].src = "assets/ground.svg";
-                        delete world.children[position + worldHeight].children[0].dataset.redrop;
+                        if(isMachine(world.children[position + worldLength], "", pushableMachines) != null) {
+                            if(world.children[position + worldLength].children.length == 1){
+                                world.children[position + (worldLength * 2)].children[0].src = isMachine(world.children[position + worldLength], "", pushableMachines);
+                                
+                                world.children[position + worldLength].children[0].src = "assets/ground.svg";
+                                delete world.children[position + worldLength].children[0].dataset.redrop;
 
-                        world.children[position + (worldHeight * 2)].children[0].src = isMachine(world.children[position + worldLength], "", pushableMachines);
-                        world.children[position + (worldHeight * 2)].children[0].dataset.redrop = 1;
+                                world.children[position + (worldLength * 2)].children[0].dataset.redrop = 1;
+                            }else{
+                                //
+                                setTimeout(() => {
+                                    world.children[position + (worldLength * 2)].appendChild(world.children[position + worldLength].children[1]);
+
+                                    world.children[position + (worldLength * 2)].children[1].style.left = world.children[position + (worldLength * 2)].children[0].style.left;
+                                    world.children[position + (worldLength * 2)].children[1].style.top = world.children[position + (worldLength * 2)].children[0].style.top;
+                                }, nextDelay); 
+                            }
+                        }
                     }
                     //
 
@@ -700,6 +772,9 @@ function machinesAbility() {
         if (machine.getAttribute("src") === "assets/activator.svg") {
             world.children[position].children[0].src = "assets/ac-activator.svg";
         }
+        if (machine.getAttribute("src") === "assets/sunsaw-body.svg") {
+            world.children[position].children[0].src = "assets/ac-sunsaw-body.svg";
+        }
     });
 }
 function findFreeSlot(inventory, targetSrc, unstackable) {
@@ -744,7 +819,6 @@ function collectItem(e, amnt, oneSrc){
     const shortSrc = fullSrc.substring(srcStart, srcEnd);
 
     let stackableStatus = (unstackables.includes(shortSrc)) ? 1 : 0;
-
     if(stackableStatus){
         let craftedItmSlot = findFreeSlot(inventory, null, stackableStatus);
         createElm(1, "img", "item", inventory.children[craftedItmSlot.index], `assets/${shortSrc}.svg`);
@@ -757,7 +831,7 @@ function collectItem(e, amnt, oneSrc){
             createElm(1, "p", "amount", inventory.children[craftedItmSlot.index], null, null, amnt);
             if (activeSlot == craftedItmSlot.index) cursor.src = `assets/${shortSrc}.svg`;
         }
-        else inventory.children[craftedItmSlot.index].children[1].innerText = parseInt(inventory.children[craftedItmSlot.index].children[1].innerText) + 1;
+        else inventory.children[craftedItmSlot.index].children[1].innerText = parseInt(inventory.children[craftedItmSlot.index].children[1].innerText) + parseInt(amnt);
     }
 }
 function inventoryHandler(inv){
@@ -855,7 +929,9 @@ function recipeMenu(e, mouseX, mouseY){
         recpeMnu.classList.remove("active");
     }
 }
-function smelt(e){
+
+let destroyAnim;
+function smelt(e, input, output){
     let iteration = 0;
 
     if(e.dataset.smelting == 2){
@@ -863,23 +939,52 @@ function smelt(e){
         e.dataset.smelting = 0;  
         iteration = 0;  
         
-        collectItem(null, 1, "assets/hl-iron.svg")
+        collectItem(null, e.dataset.output_amnt, `assets/hl-${e.dataset.output}.svg`)
+
+        delete e.dataset.input;
+        delete e.dataset.output;
+        delete e.dataset.output_amnt;
     }
+    if(inventory.children[activeSlot].children.length != 0 && e.getAttribute("src") == "assets/hl-furnace.svg" && inventory.children[activeSlot].children[0].getAttribute("src").includes("pickaxe") 
+    && e.dataset.smelting == 1){
+        if (destroyAnim) cancelAnimationFrame(destroyAnim);
 
+        e.style.transform = `rotate(${0}deg)`;
+        e.dataset.smelting = 0;
+        iteration = 0;
+
+        collectItem(null, e.dataset.output_amnt, `assets/hl-${e.dataset.input}.svg`)
+
+        delete e.dataset.input;
+        delete e.dataset.output;
+        delete e.dataset.output_amnt;
+    }
     if(inventory.children[activeSlot].children.length != 0 && e.getAttribute("src") == "assets/hl-furnace.svg" 
-    && inventory.children[activeSlot].children[0].getAttribute("src") == "assets/raw-iron.svg" && e.dataset.smelting != 1){
+    && inventory.children[activeSlot].children[0].getAttribute("src") == `assets/${input}.svg` && e.dataset.smelting != 1){
         let currentAmnt = inventory.children[activeSlot].children[1].innerText;
-        e.dataset.smelting = 1;    
+        e.dataset.smelting = 1;   
+        e.dataset.input = input; 
+        e.dataset.output = output; 
 
-        if(currentAmnt != 1){
-            inventory.children[activeSlot].children[1].innerText = parseInt(currentAmnt) - 1; 
-        }else{
+        if(!unstackables.includes(input)){
+            e.dataset.output_amnt = 1; 
+            if(currentAmnt != 1) inventory.children[activeSlot].children[1].innerText = parseInt(currentAmnt) - 1; 
+            else{
+                inventory.children[activeSlot].children[0].remove();
+                inventory.children[activeSlot].children[0].remove();
+    
+                cursor.src = 'assets/empty.svg';
+            }
+        }
+        if(unstackables.includes(input)){
+            e.dataset.output_amnt = currentAmnt;
+
             inventory.children[activeSlot].children[0].remove();
             inventory.children[activeSlot].children[0].remove();
-
+    
             cursor.src = 'assets/empty.svg';
         }
-        let destroyAnim;
+
         let last = performance.now();
 
         function step(now) {

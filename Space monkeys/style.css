@@ -59,9 +59,10 @@ img, #inventory .amount{
     right: -251px;
     top: -26px;
     font-size: 2rem;
-    background-color: #000000;
+    background-color: #211212;
     width: 250px;
     white-space: pre-line;
+    z-index: 2;
 }
 #inventory{
     display: flex;
@@ -72,6 +73,7 @@ img, #inventory .amount{
     bottom: calc(-16px * var(--sprite-scale) * 1.1);
     transform: translateX(-50%);
     gap: 10px;
+    z-index: 2;
 }
 #inventory .slot{
     width: calc(16px * var(--sprite-scale));
@@ -99,7 +101,7 @@ img, #inventory .amount{
     position: absolute;
     height: 400px;
     width: 200px;
-    background-color: #000000;
+    background-color: #211212;
     overflow-y: auto;
     
     display: flex;
@@ -126,4 +128,19 @@ img, #inventory .amount{
 #world .machine .arm{
     z-index: 1;
     pointer-events: none;
+}
+#world .machine .right{
+    left: calc(16px * var(--sprite-scale));
+}
+#world .machine .left{
+    left: calc(-16px * var(--sprite-scale));
+    rotate: 180deg;
+}
+#world .machine .down{
+    top: calc(16px * var(--sprite-scale));
+    rotate: 90deg;
+}
+#world .machine .up{
+    top: calc(-16px * var(--sprite-scale));
+    rotate: -90deg;
 }
