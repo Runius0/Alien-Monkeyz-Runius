@@ -5,8 +5,8 @@ const path = [];
 
 const spriteScale = 5;
 
-const worldLength = 25;
-const worldHeight = 10;
+const worldLength = 30;
+const worldHeight = 15;
 
 const infoTxt = createElm(1, "p", null, world, null, "info-txt", null);
 infoTxt.style.height = `${(16 * spriteScale) * worldHeight}px`;
@@ -21,7 +21,7 @@ Promise.all([
     addPath(worldLength, worldHeight),
 ]).then(() =>{
     return Promise.all([
-        /* generateStructures(100, "assets/tree.svg", 27),
+        generateStructures(100, "assets/tree.svg", 27),
         generateStructures(100, "assets/tree.svg", 27),
         generateStructures(100, "assets/tree.svg", 27),
         generateStructures(100, "assets/tree.svg", 27),
@@ -30,7 +30,7 @@ Promise.all([
         generateStructures(20, "assets/big-rock.svg", 29),
         //
         generateStructures(20, "assets/iron-ore.svg", 21),
-        generateStructures(20, "assets/iron-ore.svg", 21), */
+        generateStructures(20, "assets/iron-ore.svg", 21),
     ]);
 }).then(() =>{
     return waveStartBtn.classList.add("active");
