@@ -49,11 +49,11 @@ function addPath(row_size, height_size){
     runningPaths++;
 
     return new Promise(resolve => {
-        let startTile = rndmNumb(1, (row_size / 2) - 1);
+        let startTile = rndmNumb(2, row_size - 1);
         world.children[startTile].children[0].src = "assets/path.svg";
         
-        let rndmPathHeight = rndmNumb(1, height_size - 2);
-        let rndmPathWidth = rndmNumb(1, row_size);
+        let rndmPathHeight = rndmNumb(1, 3);
+        let rndmPathWidth = rndmNumb(-row_size+2, row_size-2);
 
         let currPathHeight = -1;
         let currPathWidth = 0;
@@ -67,15 +67,26 @@ function addPath(row_size, height_size){
             // ADD PATH INDEXES TO AN ARRAY
             if(currPathHeight != rndmPathHeight - 1){
                 currPathHeight++;
-                currTile = ((startTile * 2 + (row_size - startTile)) + row_size * currPathHeight);
-                world.children[currTile].children[0].src = "assets/path.svg";
+                currTile = ((startTile + row_size) + row_size * currPathHeight);
+		if(currPathHeight == rndmPathHeight - 1){
+			world.children[currTile].children[0].src = "assets/path-c.svg";
+                }else{
+			world.children[currTile].children[0].src = "assets/path.svg";
+		}
             }else if(currPathWidth != rndmPathWidth){
-                currPathWidth++;
-                currTile = ((startTile * 2 + (row_size - startTile)) + row_size * currPathHeight) + currPathWidth;
-
+                currPathWidth+= Math.sign(rndmPathWidth);
+                currTile = ((startTile + row_size) + row_size * currPathHeight) + currPathWidth;
+		if (currTile % row_size == 0 && Math.sign(rndmPathWidth) == 1) {
+			currPathHeight -= 1;
+			rndmPathHeight -= 1;
+		}else if (currTile % row_size == 1  && Math.sign(rndmPathWidth) == -1) {
+			currPathHeight += 1;
+			rndmPathHeight += 1;
+		}		
+		
                 // ONE EXCEPTION WHEN THE PATH IS IN THE BOTTOM LEFT CORNER MAKE THE TILE VERTICAL
-                if(currTile == (row_size * height_size) - row_size + 1)
-                    world.children[currTile].children[0].src = "assets/path.svg";
+                if(currTile == (row_size * height_size) - row_size + 1 || currPathWidth == rndmPathWidth)
+                    world.children[currTile].children[0].src = "assets/path-c.svg";
                 else
                     world.children[currTile].children[0].src = "assets/path-r.svg";
             }
@@ -83,10 +94,10 @@ function addPath(row_size, height_size){
                 startTile = currTile;
                 //
                 currPathHeight = -1;
-                rndmPathHeight =  rndmNumb(1, height_size - 2);
+                rndmPathHeight =  rndmNumb(2, 5);
                 currPathWidth = 0;
-                rndmPathWidth = rndmNumb(1, row_size);
-            }
+                rndmPathWidth = rndmNumb(-row_size+2, row_size-2);
+            }		
             // ADD THE REST PATH TILE VALUES
             path.push([currTile, world.children[currTile].children[0].src]);
 
