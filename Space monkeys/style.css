@@ -51,7 +51,7 @@ img, #inventory .amount{
     display: none;
 }
 #info-txt:not(.active){
-    color:#211912;
+    color:#341c27;
 }
 #info-txt:is(.active){
     position: absolute;
@@ -59,7 +59,7 @@ img, #inventory .amount{
     right: -251px;
     top: -26px;
     font-size: 2rem;
-    background-color: #211212;
+    background-color: #341c27;
     width: 250px;
     white-space: pre-line;
     z-index: 2;
@@ -78,17 +78,17 @@ img, #inventory .amount{
 #inventory .slot{
     width: calc(16px * var(--sprite-scale));
     height: calc(16px * var(--sprite-scale));
-    background-color: #d9d9d9; 
+    background-color: #a8b5b2; 
 }
 #inventory .slot:is(.active){
-   border: 5px solid #a600ff; 
+   border: 5px solid #a53030; 
 }
 #inventory .amount{
     display: flex;
     justify-content: end;
     align-items: end;
     height: calc(16px * var(--sprite-scale));
-    color: #211212;
+    color: #090a14;
     bottom: calc(22px * var(--sprite-scale));
     left: 0;
     position: relative;
@@ -100,8 +100,8 @@ img, #inventory .amount{
 #recipe-menu {
     position: absolute;
     height: 400px;
-    width: 200px;
-    background-color: #211212;
+    width: 300px;
+    background-color: #341c27;
     overflow-y: auto;
     
     display: flex;
@@ -118,7 +118,7 @@ img, #inventory .amount{
     font-size: 1.7rem;
     height: fit-content;
     width: fit-content;
-    background-color: #292929;
+    background-color: #341c27;
 }
 #recipe-menu .recipes{
     display: flex;
