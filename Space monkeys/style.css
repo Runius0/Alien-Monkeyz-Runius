@@ -78,10 +78,18 @@ img, #inventory .amount{
 #inventory .slot{
     width: calc(16px * var(--sprite-scale));
     height: calc(16px * var(--sprite-scale));
-    background-color: #a8b5b2; 
+    background-color: #a8b5b2;
+    border: 5px solid transparent;
 }
 #inventory .slot:is(.active){
-   border: 5px solid #a53030; 
+    border: 5px solid #a53030;
+}
+#inventory .item{
+    display: flex;
+    position: relative;
+    right: 3px;
+    bottom: 5px;
+    font-size: 1.66rem;
 }
 #inventory .amount{
     display: flex;
@@ -89,7 +97,7 @@ img, #inventory .amount{
     align-items: end;
     height: calc(16px * var(--sprite-scale));
     color: #090a14;
-    bottom: calc(22px * var(--sprite-scale));
+    bottom: calc(21.5px * var(--sprite-scale));
     left: 0;
     position: relative;
     font-size: 1.66rem;
