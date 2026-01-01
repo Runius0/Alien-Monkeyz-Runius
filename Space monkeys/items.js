@@ -1,1 +1,2 @@
 const unstackables = ["pickaxe", "axe", "stone-pickaxe", "stone-axe", "iron-pickaxe", "iron-axe"];
+const drops = { "hl-tree": [["log", 2], ["log", 3], ["log", 5], ["sapling",1]], "hl-big-rock":[["stone", 2], ["stone", 3], ["stone", 5]], "hl-iron-ore":[["raw-iron", 2], ["raw-iron", 3], ["raw-iron", 5]]};

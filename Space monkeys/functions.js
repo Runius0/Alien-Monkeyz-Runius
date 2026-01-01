@@ -109,7 +109,7 @@ function addPath(row_size, height_size){
 
                 resolve(); 
             } 
-        }, 50);
+        }, 1);
     });
 }
 function generateStructures(amnt, source, struc_size){
@@ -120,13 +120,9 @@ function generateStructures(amnt, source, struc_size){
             counter++;
             rndmTile = rndmNumb(1, world.children.length - 3);
             if(world.children[rndmTile].children[0].getAttribute("src") == "assets/path.svg" ||
-            world.children[rndmTile].children[0].getAttribute("src") == "assets/path-r.svg")
-            {
-                if(world.children[rndmTile].children[0].getAttribute("src") == "assets/path.svg")
-                    world.children[rndmTile].children[0].src = "assets/path.svg";
-                if(world.children[rndmTile].children[0].getAttribute("src") == "assets/path-r.svg")
-                    world.children[rndmTile].children[0].src = "assets/path-r.svg";
-                    
+            world.children[rndmTile].children[0].getAttribute("src") == "assets/path-r.svg" ||
+            world.children[rndmTile].children[0].getAttribute("src") == "assets/path-c.svg")
+            {       
                 world.children[rndmTile].children[0].style.transform = `translateY(${0}px)`;
             }
             else if(world.children[rndmTile].children[0].nodeName.toLowerCase() == "img" && world.children[rndmTile].children[0].getAttribute("src") == "assets/ground.svg"){
@@ -137,7 +133,7 @@ function generateStructures(amnt, source, struc_size){
                 clearInterval(strucGenInterval);
                 resolve();
             }
-        }, 1);
+        }, 0);
     });
 }
 function cursorHandler(){
@@ -145,42 +141,42 @@ function cursorHandler(){
     let cursorY;
 
     window.addEventListener("mousedown", function(e){
-        destoryStructures("axe", "hl-tree", e.target, 10, 27, ["log", "log", "log", "sapling"], 96);
-        destoryStructures("stone-axe", "hl-tree", e.target, 10, 27, ["log", "log", "log", "sapling"], 60);
-        destoryStructures("iron-axe", "hl-tree", e.target, 10, 27, ["log", "log", "log", "sapling"], 30);
+        destroyStructures("axe", "hl-tree", e.target, 10, 27, 96);
+        destroyStructures("stone-axe", "hl-tree", e.target, 10, 27, 60);
+        destroyStructures("iron-axe", "hl-tree", e.target, 10, 27, 30);
 
-        destoryStructures("pickaxe", "hl-big-rock", e.target, 10, 29, ["stone"], 96);
-        destoryStructures("stone-pickaxe", "hl-big-rock", e.target, 10, 29, ["stone"], 60);
-        destoryStructures("iron-pickaxe", "hl-big-rock", e.target, 10, 29, ["stone"], 30);
+        destroyStructures("pickaxe", "hl-big-rock", e.target, 10, 29, 96);
+        destroyStructures("stone-pickaxe", "hl-big-rock", e.target, 10, 29, 60);
+        destroyStructures("iron-pickaxe", "hl-big-rock", e.target, 10, 29, 30);
         
-        destoryStructures("stone-pickaxe", "hl-iron-ore", e.target, 15, 21, ["raw-iron"], 60);
-        destoryStructures("iron-pickaxe", "hl-iron-ore", e.target, 15, 21, ["raw-iron"], 30);
+        destroyStructures("stone-pickaxe", "hl-iron-ore", e.target, 15, 21, 60);
+        destroyStructures("iron-pickaxe", "hl-iron-ore", e.target, 15, 21, 30);
         
-        destoryStructures("pickaxe", "hl-furnace", e.target, 1, 0, [], 96);
-        destoryStructures("stone-pickaxe", "hl-furnace", e.target, 1, 0, [], 60);
-        destoryStructures("iron-pickaxe", "hl-furnace", e.target, 1, 0, [], 30);
+        destroyStructures("pickaxe", "hl-furnace", e.target, 1, 0, 96);
+        destroyStructures("stone-pickaxe", "hl-furnace", e.target, 1, 0, 60);
+        destroyStructures("iron-pickaxe", "hl-furnace", e.target, 1, 0, 30);
         
-        destoryStructures("axe", "hl-workbench", e.target, 1, 0, [], 96);
-        destoryStructures("stone-axe", "hl-workbench", e.target, 1, 0, [], 60);
-        destoryStructures("iron-axe", "hl-workbench", e.target, 1, 0, [], 30);
+        destroyStructures("axe", "hl-workbench", e.target, 1, 0, 96);
+        destroyStructures("stone-axe", "hl-workbench", e.target, 1, 0, 60);
+        destroyStructures("iron-axe", "hl-workbench", e.target, 1, 0, 30);
 
-        destoryStructures("stone-pickaxe", "hl-rotater", e.target, 1, 0, [], 60);
-        destoryStructures("stone-pickaxe", "hl-mover", e.target, 1, 0, [], 60);
-        destoryStructures("stone-pickaxe", "hl-delayer", e.target, 1, 0, [], 60);
-        destoryStructures("stone-pickaxe", "hl-activator", e.target, 1, 0, [], 60);
+        destroyStructures("stone-pickaxe", "hl-rotater", e.target, 1, 0, 60);
+        destroyStructures("stone-pickaxe", "hl-mover", e.target, 1, 0, 60);
+        destroyStructures("stone-pickaxe", "hl-delayer", e.target, 1, 0, 60);
+        destroyStructures("stone-pickaxe", "hl-activator", e.target, 1, 0, 60);
 
-        destoryStructures("iron-pickaxe", "hl-rotater", e.target, 1, 0, [], 30);
-        destoryStructures("iron-pickaxe", "hl-mover", e.target, 1, 0, [], 30);
-        destoryStructures("iron-pickaxe", "hl-delayer", e.target, 1, 0, [], 30);
-        destoryStructures("iron-pickaxe", "hl-activator", e.target, 1, 0, [], 30);
+        destroyStructures("iron-pickaxe", "hl-rotater", e.target, 1, 0, 30);
+        destroyStructures("iron-pickaxe", "hl-mover", e.target, 1, 0, 30);
+        destroyStructures("iron-pickaxe", "hl-delayer", e.target, 1, 0, 30);
+        destroyStructures("iron-pickaxe", "hl-activator", e.target, 1, 0, 30);
 
-        destoryStructures("stone-pickaxe", "hl-sunsaw-body", e.target, 1, 0, ["iron"], 60, 1);
-        destoryStructures("stone-pickaxe", "hl-clawmachine-body", e.target, 1, 0, ["iron"], 60, 1);
-        destoryStructures("stone-pickaxe", "hl-shooter-body", e.target, 1, 0, ["iron"], 60, 1);
+        destroyStructures("stone-pickaxe", "hl-sunsaw-body", e.target, 1, 0, 60, 1);
+        destroyStructures("stone-pickaxe", "hl-clawmachine-body", e.target, 1, 0, 60, 1);
+        destroyStructures("stone-pickaxe", "hl-shooter-body", e.target, 1, 0, 60, 1);
 
-        destoryStructures("iron-pickaxe", "hl-sunsaw-body", e.target, 1, 0, [], 30, 1);
-        destoryStructures("iron-pickaxe", "hl-clawmachine-body", e.target, 1, 0, [], 30, 1);
-        destoryStructures("iron-pickaxe", "hl-shooter-body", e.target, 1, 0, [], 30, 1);
+        destroyStructures("iron-pickaxe", "hl-sunsaw-body", e.target, 1, 0, 30, 1);
+        destroyStructures("iron-pickaxe", "hl-clawmachine-body", e.target, 1, 0, 30, 1);
+        destroyStructures("iron-pickaxe", "hl-shooter-body", e.target, 1, 0, 30, 1);
 
         placeDownItems("log", e.target);
         placeDownItems("stone", e.target);
@@ -284,7 +280,7 @@ function outlineAdder(struc, e, maxHp){
     
     if(src && (src === baseSrc || src.includes(`assets/${struc}`))){
         e.src = hlSrc;
-
+	let infoText = struc + "\n";
         if(!e._hasLeaveHandler){
             e.addEventListener("mouseleave", function(){
                 if(e.getAttribute("src").startsWith("assets/hl-")){
@@ -295,44 +291,45 @@ function outlineAdder(struc, e, maxHp){
             e._hasLeaveHandler = true;
         }
         if(!e.dataset.redrop || !e.classList.contains("recipe")){
-            if(e.dataset.drop != 0){
-                if(e.dataset.destroyed === undefined) infoTxt.textContent = `Hp ${maxHp}`;
-                else infoTxt.textContent = `Hp ${Math.abs(e.dataset.destroyed - maxHp)}`;
+            if(e.dataset.drop == undefined){
+                if(e.dataset.destroyed === undefined) infoText += `Hp ${maxHp}`;
+                else infoText += `Hp ${Math.abs(e.dataset.destroyed - maxHp)}`;
             } else {
-                e.dataset.drop = maxHp;
-                infoTxt.textContent = `Amnt ${maxHp}`;
+                //e.dataset.drop = maxHp;
+                //infoText += `Amnt ${maxHp}`;
             }
-            if(e.dataset.drop > 0) infoTxt.textContent = `Amnt ${e.dataset.drop}`;
+            if(e.dataset.drop > 0) infoText += `Amnt ${e.dataset.drop}`;
         }
         if(e.dataset.redrop){
-            infoTxt.textContent = `Amnt ${e.dataset.redrop}`;
+            infoText += `Amnt ${e.dataset.redrop}`;
         }
         if(e.classList.contains("recipe")){
             for (let i = 0; i < maxHp.length; i++) 
                 infoTxtVal += `${maxHp[i].toString().replace(",", " ")} \n`;
 
-            infoTxt.textContent = infoTxtVal;
+            infoText += infoTxtVal;
         }
-        //
+        infoTxt.textContent = infoText;
         infoTxt.classList.add("active");
     }
 }
-function destoryStructures(tool, struc, e, maxHp, spriteSize, drop, _speed, isMachine) {
+function destroyStructures(tool, struc, e, maxHp, spriteSize, _speed, isMachine) {
     if(e.parentNode.parentNode == recpeMnu) return; 
 
     let destroyAnim;
     let iteration = 0;
     let last = performance.now();
     let speed = _speed;
-
+    let drop = drops[struc];
     if (
         inventory.children[activeSlot].children.length != 0 && 
         inventory.children[activeSlot].children[0].getAttribute("src") == `assets/${tool}.svg` &&
         e.getAttribute("src") == `assets/${struc}.svg`
     ) {
-
-        drop = (drop.length > 1) ? drop[rndmNumb(0, drop.length - 1)] : drop[0];
-
+	if (drop) {
+        	drop = (drop.length > 1) ? drop[rndmNumb(0, drop.length - 1)] : drop[0];
+	}
+	console.log(drop)
         if (e.destroyAnimRunning) return; 
         e.destroyAnimRunning = true; 
 
@@ -361,8 +358,8 @@ function destoryStructures(tool, struc, e, maxHp, spriteSize, drop, _speed, isMa
                     e.destroyAnimRunning = false;
 
                     if(drop) {
-                        e.src = `assets/${drop}.svg`;
-                        e.dataset.drop = 0
+                        e.src = `assets/${drop[0]}.svg`;
+                        e.dataset.drop = drop[1]
                         if(isMachine != undefined){
                             e.parentNode.children[1].remove();
                             delete e.dataset.redrop;
