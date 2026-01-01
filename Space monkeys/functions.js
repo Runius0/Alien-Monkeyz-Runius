@@ -306,7 +306,7 @@ function outlineAdder(struc, e, maxHp){
         if(e.classList.contains("recipe")){
             for (let i = 0; i < maxHp.length; i++) 
                 infoTxtVal += `${maxHp[i].toString().replace(",", " ")} \n`;
-
+	    e.dataset.drop = maxHp;
             infoText += infoTxtVal;
         }
         infoTxt.textContent = infoText;
@@ -892,13 +892,10 @@ function recipeMenu(e, mouseX, mouseY){
                 .split(/\r?\n/)
                 .map(line => line.trim())
                 .filter(line => line.length > 0);
-    
-            const requirements = infoTxtLines.map(line => {
-                const mat = line.match(/[^\d]+/g)?.join('').trim();
-                const amntArray = line.match(/\d+/g)?.map(Number) || [];
-                const amnt = amntArray[0];
-                return [mat, amnt];
-            });
+    	    
+	    console.log(e.getAttribute("src"))
+            let requirements = recipeReqs[e.getAttribute("src")];
+	    if (!requirements) requirements = [] 
     
             const materialSlots = requirements.map(req => {
                 return findFreeSlot(inventory, `assets/${req[0]}.svg`);

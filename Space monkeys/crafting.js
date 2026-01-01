@@ -17,3 +17,8 @@ createElm(1, "img", "recipe", recipes, "assets/activator.svg", null, "", 1);
 createElm(1, "img", "recipe", recipes, "assets/sunsaw-body.svg", null, "", 1);
 createElm(1, "img", "recipe", recipes, "assets/clawmachine-body.svg", null, "", 1);
 createElm(1, "img", "recipe", recipes, "assets/shooter-body.svg", null, "", 1);
+
+const recipeReqs = {"assets/hl-axe.svg": [["log", 10]], "assets/hl-pickaxe.svg": [["log", 10]],
+"assets/hl-stone-axe.svg": [["log", 10],["stone",5]], "assets/hl-stone-pickaxe.svg": [["log", 10],["stone",5]],
+"assets/hl-iron-axe.svg": [["log", 10],["iron",5]], "assets/hl-iron-pickaxe.svg": [["log", 10],["iron",5]],
+"assets/hl-furnace.svg": [["stone", 10], ["log", 5]]}
